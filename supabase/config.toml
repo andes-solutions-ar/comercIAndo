@@ -1,0 +1,6 @@
+project_id = "comerciando-premium"
+[functions.admin-invite-user]
+verify_jwt = false
+[functions.create-web-order]
+verify_jwt = false
+

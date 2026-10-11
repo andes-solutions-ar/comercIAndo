@@ -1,31 +1,26 @@
 <!doctype html>
 <html lang="es" data-theme="light">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>comercIAndo Premium — Andes Solutions</title>
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-</head>
-<body>
-<aside id="side">
-  <div class="brand"><div class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19 9.5 7l4 7 2.5-4L21 19z"/></svg></div><div><b>comercIAndo</b><small>by Andes Solutions</small></div></div>
-  <div class="plan">Plan activo <b>PREMIUM</b></div>
-  <nav id="nav"></nav>
-  <div class="me"><div class="av">AS</div><div><b>Comercio Demo</b><small>Administrador</small></div></div>
-</aside>
-<div class="wrap">
-  <header class="top">
-    <button class="burger" id="bg" aria-label="Menú">☰</button>
-    <div class="crumb" id="crumb"></div>
-    <div class="seg" role="group" aria-label="Tema"><button data-t="light" class="on">Claro</button><button data-t="dark">Oscuro</button></div>
-  </header>
-  <main id="m"><div class="in" id="v"></div></main>
-</div>
-<div class="toast" id="toast"></div>
-<script type="module" src="/src/main.js"></script>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <title>comercIAndo Premium — Suite Comercial</title>
+    <link rel="icon" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="app">
+      <div class="auth-screen" role="status">Verificando sesión…</div>
+    </div>
+    <div id="modalRoot"></div>
+    <div class="toast" id="toast" role="status"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
 </html>

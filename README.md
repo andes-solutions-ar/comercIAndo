@@ -34,89 +34,36 @@ Incluye START y agrega:
   - Nómina de personal y gestión de turnos, o
   - Presupuestos y cotizaciones.
 
-## Arquitectura
+## Arquitectura actual de Premium
 
-ComercIAndo mantiene **una sola base de código**. Las funciones y límites se habilitan según el plan contratado mediante configuración de capacidades (feature flags/entitlements), evitando mantener tres aplicaciones diferentes.
+La referencia aceptada es `indexantigravity.html`: se conserva su sistema visual y sus once módulos. La aplicación usa Vite y JavaScript modular, Supabase Auth, PostgreSQL y RLS.
 
-## Reglas de alcance
+La especificación nueva establece una instancia independiente de Vercel y Supabase por cliente sobre este mismo Golden Repo. La identidad del negocio se configura en `app_settings`. Esta decisión reemplaza para Premium la propuesta anterior de tenants compartidos dentro de una misma base.
 
-No incorporar funciones no aprobadas al producto. En particular, no agregar compras, proveedores, contabilidad, facturación, CRM, inteligencia artificial, automatizaciones ni recursos humanos avanzados salvo incorporación explícita posterior.
+El panel exige una sesión con perfil administrativo activo. Los productos son la fuente central de POS, inventario, catálogo y presupuestos. Las operaciones de stock, cobros, reservas y entregas se registran en transacciones. No se importan automáticamente los datos anteriores del navegador. localStorage sólo conserva el tema; Supabase Auth administra su sesión.
 
-Stock Básico y Stock Pro son capacidades distintas. START y COMMERCE utilizan Stock Básico; PREMIUM utiliza Stock Pro.
+La pasarela permanece sin configurar: el sistema registra efectivo/débito manuales y cobros digitales pendientes de confirmación, sin simular acreditaciones de un proveedor.
 
-## Base técnica
-
-Burger Control puede utilizarse como referencia técnica para patrones de interfaz y flujos ya resueltos, pero ComercIAndo es un producto independiente y no debe heredar automáticamente módulos gastronómicos ni funcionalidades fuera del alcance comercial definido.
-
-Ver `docs/product-context.md` y `src/config/plans.js`.
-
-## Configuración de Supabase
-
-El cliente único está en `src/lib/supabase.js` y consume exclusivamente
-`VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY` mediante `import.meta.env`.
-Si falta alguna variable, emite un aviso y exporta `supabase = null` junto con
-`hasSupabaseConfig = false`, evitando llamar a `createClient` con valores vacíos.
-
-Para desarrollo local:
+## Desarrollo
 
 1. Ejecutar `npm ci`.
 2. Copiar `.env.example` a `.env.local`.
-3. Completar `VITE_SUPABASE_PUBLISHABLE_KEY` en `.env.local` con la publishable key del proyecto.
-4. Ejecutar `npm run dev`. Reiniciar Vite si se modifican las variables.
-5. Ejecutar `npm run build` para verificar la compilación.
+3. Completar `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY` del proyecto correspondiente.
+4. Ejecutar `npm run dev`.
+5. Verificar con `npm test` y `npm run build`.
 
-Los archivos `.env`, `.env.local` y `.env.*` se excluyen de Git; solamente
-`.env.example` se versiona. Las variables `VITE_*` son públicas en el navegador:
-usar únicamente la publishable key, nunca credenciales privadas.
+Las variables `VITE_*` se incorporan al frontend y sólo deben contener la URL y una publishable key. Los archivos de entorno reales están excluidos de Git. No colocar credenciales administrativas en ellos ni en el código del navegador.
 
-En el proyecto Vercel `comerciando`, configurar ambas variables para
-**Production**, **Preview** y **Development**:
+## Backend y despliegue
 
-- `VITE_SUPABASE_URL`: `https://ilvdzyhpnhgkkcyptxtf.supabase.co`.
-- `VITE_SUPABASE_PUBLISHABLE_KEY`: configurar manualmente en Vercel, sin agregarla al repositorio.
+Las migraciones están en `supabase/migrations`. Las Edge Functions están en `supabase/functions`; requieren `SITE_URL` y los secrets predeterminados de servidor de Supabase. Configurar las variables del frontend en Production, Preview y Development de Vercel, y publicar las migraciones/funciones en el backend de esa misma instancia. Vercel no aplica migraciones SQL automáticamente.
 
-Vite incorpora estas variables al compilar. Un cambio en Vercel requiere un nuevo
-build y despliegue para aplicarse al frontend.
+Auth debe tener registro público deshabilitado y redirecciones de invitación/recuperación autorizadas. Andes crea el primer `super_admin` administrativamente; luego invita hasta tres administradores desde Usuarios. Cada destinatario define personalmente su contraseña.
 
-`src/main.js` importa el cliente centralizado para que Vite incluya su
-configuración por variables de entorno. La autenticación y las operaciones
-remotas todavía no están conectadas. El build de la página por sí solo no
-confirma una conexión remota a Supabase.
+El catálogo se publica en `/catalogo` cuando se habilita desde configuración. Los pedidos web parten desactivados.
 
-## Frontend aceptado
+El [informe de implementación](docs/IMPLEMENTACION_PREMIUM.md) detalla archivos, tablas, políticas, RPC, Edge Functions, verificación y pendientes de aceptación. Los flujos que requieren un usuario real deben verificarse después de que ese usuario complete su invitación.
 
-La interfaz aceptada proviene del archivo suministrado `index (2).html`.
-`index.html` contiene la estructura, `src/styles.css` conserva la tipografía
-Instrument Sans, las paletas y los temas claro/oscuro, y `src/main.js` contiene
-la navegación y las interacciones del diseño. `public/favicon.svg` utiliza
-el símbolo de marca del mismo archivo.
+## Alcance
 
-Se corrigieron el arranque con tema oscuro del sistema y el desborde horizontal
-de las tablas en móvil, conservando la apariencia de escritorio.
-
-Inicio, Punto de venta, Ventas y pedidos y Stock Pro muestran los datos de
-demostración del archivo aceptado. El carrito, las cantidades, las categorías,
-los métodos de pago y los avisos del POS son simulaciones locales en memoria:
-no registran ventas, no procesan pagos ni modifican stock real. Las restantes
-secciones conservan los placeholders del diseño; no se agregaron módulos.
-Los datos anteriores de localStorage no se borran ni se migran.
-
-Las variables `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY` están
-configuradas en el proyecto Vercel `comerciando` para Production, Preview y
-Development. La clave se mantiene fuera del repositorio y el ejemplo permanece
-vacío. El cliente se inicializa con esas variables; se verificó una consulta
-de solo lectura al endpoint de configuración de autenticación de Supabase.
-Los flujos de login, membresías y datos del negocio siguen pendientes de las
-próximas etapas; esta conexión no crea ni modifica tablas.
-
-## Próximas etapas de la arquitectura multiempresa
-
-Orden aprobado: autenticación, negocios/tenants, usuarios, membresías y permisos,
-productos, stock, ventas/POS y pagos.
-
-La relación será **Usuario → Membresía → Negocio → Datos del negocio**.
-Productos, ventas, movimientos de stock y accesos administrativos deberán
-pertenecer a un negocio. El acceso se comprobará mediante membresías y políticas
-RLS en Supabase; los límites del plan no sustituyen esa autorización.
-En esta etapa no se crean tablas, políticas ni migraciones y no se trasladan
-datos de localStorage.
+No se agregaron compras, proveedores, CRM, contabilidad, facturación fiscal, IA ni automatizaciones. Premium incluye un módulo empresarial seleccionable: presupuestos y cotizaciones, o personal y turnos.

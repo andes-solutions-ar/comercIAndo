@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>QA local — ComercIAndo</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="modalRoot"></div>
+    <div id="toast" class="toast"></div>
+    <script type="module">
+      import "../../src/styles.css";
+      import { shell } from "../../src/components/shell.js";
+      import { NAV, ic } from "../../src/components/navigation.js";
+      import {
+        productsView,
+        stockView,
+        productDialog,
+        moveDialog,
+      } from "../../src/views/inventory.js";
+      import { posView, bindPos } from "../../src/views/pos.js";
+      import {
+        salesView,
+        paymentsView,
+        deliveriesView,
+      } from "../../src/views/sales.js";
+      import {
+        settingsView,
+        usersView,
+        userDialog,
+      } from "../../src/views/settings.js";
+      import {
+        businessView,
+        quoteDialog,
+      } from "../../src/views/business-module.js";
+      import { dashboardView } from "../../src/views/dashboard.js";
+      import { catalogView } from "../../src/views/catalog.js";
+      // Browser-only fixture. Vite's production entry does not import this file.
+      const s = {
+        profile: {
+          id: "fixture",
+          full_name: "QA",
+          access_level: "super_admin",
+          active: true,
+        },
+        profiles: [],
+        products: [
+          {
+            id: "fixture-product",
+            name: "Producto de prueba",
+            category: "General",
+            price: 1210,
+            stock_quantity: 10,
+            minimum_stock: 2,
+            reserved: 2,
+            available: 8,
+            visual_hue: 210,
+            active: true,
+            published: true,
+            item_type: "product",
+            track_stock: true,
+          },
+        ],
+        sales: [],
+        payments: [],
+        movements: [],
+        deliveries: [],
+        invitations: [],
+        quotes: [],
+        staff: [],
+        shifts: [],
+        settings: {
+          store_name: "Comercio de prueba",
+          business_category: "Comercio minorista",
+          tax_rate: 21,
+          sound_enabled: true,
+          business_module: "quotes",
+        },
+      };
+      const views = {
+        home: dashboardView,
+        pos: posView,
+        sales: salesView,
+        pay: paymentsView,
+        web: catalogView,
+        prod: productsView,
+        stock: stockView,
+        ship: deliveriesView,
+        user: usersView,
+        mod: businessView,
+        cfg: settingsView,
+      };
+      document.querySelector("#app").innerHTML = shell;
+      document.querySelector("#storeNameSide").textContent =
+        s.settings.store_name;
+      document.querySelector("#nav").innerHTML = NAV.map(
+        ([group, items]) =>
+          (group ? `<div class="grp">${group}</div>` : "") +
+          items
+            .map(
+              ([key, label]) =>
+                `<button data-go="${key}">${ic(key)}<span>${label}</span></button>`,
+            )
+            .join(""),
+      ).join("");
+      let view = "home";
+      function render() {
+        document.querySelector("#v").innerHTML = views[view](s);
+        document.querySelector("#crumb").textContent =
+          "ComercIAndo Premium · QA local";
+        document
+          .querySelectorAll("[data-go]")
+          .forEach((b) => b.classList.toggle("on", b.dataset.go === view));
+        if (view === "pos") bindPos(s, async () => {});
+      }
+      document.querySelector("#app").addEventListener("click", (ev) => {
+        const go = ev.target.closest("[data-go]");
+        if (go) {
+          view = go.dataset.go;
+          document.querySelector("#side").classList.remove("open");
+          render();
+        }
+        const action = ev.target.closest("[data-action]")?.dataset.action;
+        if (action === "new-product") productDialog(s, async () => {});
+        if (action === "new-move") moveDialog(s, async () => {});
+        if (action === "invite-user") userDialog(s, async () => {});
+        if (action === "new-quote") quoteDialog(s, async () => {});
+      });
+      document.querySelector("#bg").onclick = () =>
+        document.querySelector("#side").classList.toggle("open");
+      document.querySelectorAll("[data-t]").forEach(
+        (b) =>
+          (b.onclick = () => {
+            document.documentElement.dataset.theme = b.dataset.t;
+            document
+              .querySelectorAll("[data-t]")
+              .forEach((x) => x.classList.toggle("on", x === b));
+          }),
+      );
+      render();
+    </script>
+  </body>
+</html>
