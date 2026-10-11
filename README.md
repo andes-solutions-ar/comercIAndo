@@ -101,8 +101,13 @@ no registran ventas, no procesan pagos ni modifican stock real. Las restantes
 secciones conservan los placeholders del diseño; no se agregaron módulos.
 Los datos anteriores de localStorage no se borran ni se migran.
 
-La conexión a Supabase queda pendiente de configurar manualmente
-`VITE_SUPABASE_PUBLISHABLE_KEY` en Vercel para Production, Preview y Development.
+Las variables `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY` están
+configuradas en el proyecto Vercel `comerciando` para Production, Preview y
+Development. La clave se mantiene fuera del repositorio y el ejemplo permanece
+vacío. El cliente se inicializa con esas variables; se verificó una consulta
+de solo lectura al endpoint de configuración de autenticación de Supabase.
+Los flujos de login, membresías y datos del negocio siguen pendientes de las
+próximas etapas; esta conexión no crea ni modifica tablas.
 
 ## Próximas etapas de la arquitectura multiempresa
 
