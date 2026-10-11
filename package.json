@@ -1,0 +1,15 @@
+{
+  "name": "comerciando",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Base SaaS generalista de Andes Solutions para START, COMMERCE y PREMIUM.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^7.1.7"
+  }
+}
