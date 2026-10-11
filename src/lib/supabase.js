@@ -5,6 +5,10 @@ const supabasePublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 export const hasSupabaseConfig = Boolean(supabaseUrl && supabasePublishableKey);
 
+if (!hasSupabaseConfig) {
+  console.warn('Faltan variables de entorno de Supabase');
+}
+
 export const supabase = hasSupabaseConfig
   ? createClient(supabaseUrl, supabasePublishableKey, {
       auth: {
