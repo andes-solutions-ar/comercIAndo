@@ -1,13 +1,704 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0f172a" />
-    <title>ComercIAndo — Andes Solutions</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
-  </body>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111f">
+  <title>ComercIAndo Premium — Andes Solutions</title>
+  <style>
+    :root{
+      --bg:#07111f;
+      --bg-2:#0a1628;
+      --surface:#0d1b2f;
+      --surface-2:#11223a;
+      --surface-3:#152943;
+      --line:#213754;
+      --line-soft:rgba(255,255,255,.08);
+      --text:#f4f7fb;
+      --muted:#8fa2bb;
+      --blue:#3b82f6;
+      --blue-2:#60a5fa;
+      --orange:#f97316;
+      --orange-2:#fb923c;
+      --green:#22c55e;
+      --yellow:#fbbf24;
+      --red:#ef4444;
+      --shadow:0 18px 50px rgba(0,0,0,.25);
+      --radius:18px;
+      --radius-sm:12px;
+      --sidebar:250px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 85% -10%, rgba(59,130,246,.16), transparent 32%),
+        radial-gradient(circle at 10% 0%, rgba(249,115,22,.09), transparent 24%),
+        var(--bg);
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      min-height:100vh;
+    }
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+    .hidden{display:none!important}
+    .muted{color:var(--muted)}
+    .app-shell{min-height:100vh;display:grid;grid-template-columns:var(--sidebar) minmax(0,1fr)}
+    .sidebar{
+      position:sticky;top:0;height:100vh;padding:24px 18px;
+      border-right:1px solid var(--line-soft);
+      background:rgba(7,17,31,.88);
+      backdrop-filter:blur(18px);
+      display:flex;flex-direction:column;z-index:20
+    }
+    .brand-wrap{padding:4px 8px 22px}
+    .brand{font-size:25px;font-weight:800;letter-spacing:-1px}
+    .brand .ia{color:var(--orange)}
+    .brand-sub{font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:var(--muted);margin-top:5px}
+    .plan-chip{
+      margin:0 8px 20px;padding:10px 12px;border:1px solid rgba(249,115,22,.3);
+      background:rgba(249,115,22,.08);border-radius:12px;color:#ffd7be;font-size:12px;
+      display:flex;align-items:center;justify-content:space-between;gap:10px
+    }
+    .plan-chip strong{color:var(--orange-2);letter-spacing:.08em}
+    .nav{display:flex;flex-direction:column;gap:5px;overflow:auto;padding-right:4px}
+    .nav-label{font-size:10px;text-transform:uppercase;letter-spacing:.16em;color:#627894;margin:16px 10px 7px}
+    .nav button{
+      border:0;background:transparent;color:#aab9cc;width:100%;text-align:left;
+      padding:11px 12px;border-radius:11px;display:flex;align-items:center;gap:11px;font-size:13px;font-weight:650
+    }
+    .nav button:hover{background:rgba(255,255,255,.04);color:white}
+    .nav button.active{background:linear-gradient(90deg,rgba(59,130,246,.16),rgba(59,130,246,.05));color:#fff;box-shadow:inset 3px 0 var(--blue)}
+    .nav-icon{
+      width:24px;height:24px;border-radius:8px;background:#14253e;display:grid;place-items:center;
+      color:#b9c9dd;font-size:11px;border:1px solid rgba(255,255,255,.04);flex:0 0 auto
+    }
+    .nav button.active .nav-icon{background:rgba(59,130,246,.18);color:#dbeafe}
+    .sidebar-foot{margin-top:auto;padding:16px 9px 0;border-top:1px solid var(--line-soft)}
+    .profile{display:flex;gap:10px;align-items:center}
+    .avatar{
+      width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,var(--blue),#1d4ed8);
+      display:grid;place-items:center;font-weight:800;font-size:12px
+    }
+    .profile strong{font-size:12px;display:block}.profile span{font-size:11px;color:var(--muted)}
+    .main{min-width:0;padding:22px 28px 40px}
+    .mobile-header{display:none}
+    .topbar{
+      min-height:58px;display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:22px
+    }
+    .topbar h1{font-size:26px;line-height:1.1;margin:0;letter-spacing:-.7px}
+    .topbar p{margin:7px 0 0;color:var(--muted);font-size:13px}
+    .top-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .status{
+      padding:9px 12px;border:1px solid rgba(34,197,94,.2);background:rgba(34,197,94,.08);
+      color:#9ceab7;border-radius:11px;font-size:12px;font-weight:700
+    }
+    .btn{
+      border:1px solid var(--line);background:var(--surface-2);color:white;border-radius:11px;padding:10px 14px;
+      font-size:12px;font-weight:750;transition:.18s transform,.18s border-color,.18s background
+    }
+    .btn:hover{transform:translateY(-1px);border-color:#355477}
+    .btn.primary{border-color:transparent;background:linear-gradient(135deg,var(--blue),#2563eb);box-shadow:0 10px 28px rgba(37,99,235,.25)}
+    .btn.orange{border-color:transparent;background:linear-gradient(135deg,var(--orange),#ea580c);box-shadow:0 10px 28px rgba(234,88,12,.2)}
+    .btn.ghost{background:transparent}
+    .btn.danger{color:#ffb4b4;border-color:rgba(239,68,68,.25);background:rgba(239,68,68,.07)}
+    .view{display:none}.view.active{display:block}
+    .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
+    .card{
+      background:linear-gradient(180deg,rgba(17,34,58,.96),rgba(13,27,47,.96));
+      border:1px solid var(--line-soft);border-radius:var(--radius);box-shadow:var(--shadow)
+    }
+    .kpi{padding:18px;min-height:118px}
+    .kpi-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+    .kpi-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#8295ad;font-weight:700}
+    .kpi-icon{width:32px;height:32px;border-radius:10px;background:#142b49;display:grid;place-items:center;color:#9dc7ff}
+    .kpi-value{font-size:25px;font-weight:820;letter-spacing:-.8px;margin-top:13px}
+    .kpi-meta{font-size:11px;color:var(--muted);margin-top:6px}
+    .positive{color:#71dfa0}.warning{color:#ffd16a}.negative{color:#ff8f8f}
+    .grid-2{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(300px,.75fr);gap:16px}
+    .grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+    .panel{padding:18px}
+    .panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:16px}
+    .panel-head h2,.panel-head h3{margin:0;font-size:15px;letter-spacing:-.2px}
+    .panel-head p{margin:5px 0 0;color:var(--muted);font-size:11px;line-height:1.5}
+    .pill{font-size:10px;font-weight:800;padding:6px 8px;border-radius:999px;border:1px solid var(--line);color:#b8c8dc;background:#0d1b2e;white-space:nowrap}
+    .pill.green{color:#9ceab7;border-color:rgba(34,197,94,.2);background:rgba(34,197,94,.07)}
+    .pill.orange{color:#ffc9a7;border-color:rgba(249,115,22,.2);background:rgba(249,115,22,.07)}
+    .pill.blue{color:#b8d8ff;border-color:rgba(59,130,246,.2);background:rgba(59,130,246,.08)}
+    .pill.yellow{color:#ffe49b;border-color:rgba(251,191,36,.2);background:rgba(251,191,36,.07)}
+    .table-wrap{overflow:auto;border:1px solid var(--line-soft);border-radius:13px}
+    table{width:100%;border-collapse:collapse;min-width:650px}
+    th,td{padding:12px 13px;border-bottom:1px solid var(--line-soft);text-align:left;font-size:11px;vertical-align:middle}
+    th{color:#7890aa;text-transform:uppercase;letter-spacing:.07em;font-size:9px;background:#0a182a;position:sticky;top:0}
+    tr:last-child td{border-bottom:0}
+    td strong{font-size:11px}
+    .product-cell{display:flex;align-items:center;gap:10px}
+    .product-thumb{
+      width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#153457,#0f253f);
+      border:1px solid rgba(255,255,255,.05);display:grid;place-items:center;font-size:15px
+    }
+    .progress{height:7px;background:#0a1525;border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,.04)}
+    .progress span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--blue),var(--blue-2))}
+    .progress.warn span{background:linear-gradient(90deg,#eab308,#f59e0b)}
+    .progress.low span{background:linear-gradient(90deg,#dc2626,#ef4444)}
+    .bars{height:175px;display:flex;align-items:flex-end;gap:8px;padding-top:18px}
+    .bar{flex:1;min-width:15px;border-radius:6px 6px 2px 2px;background:linear-gradient(180deg,#60a5fa,#2563eb);opacity:.88;position:relative}
+    .bar:hover{opacity:1}
+    .bar::after{content:attr(data-label);position:absolute;bottom:-22px;left:50%;transform:translateX(-50%);font-size:9px;color:#7288a4}
+    .activity{display:flex;flex-direction:column;gap:13px}
+    .activity-row{display:grid;grid-template-columns:34px 1fr auto;gap:11px;align-items:center}
+    .activity-icon{width:34px;height:34px;border-radius:10px;background:#142844;display:grid;place-items:center;font-size:12px}
+    .activity-row strong{display:block;font-size:11px}.activity-row span{font-size:10px;color:var(--muted)}
+    .quick-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .quick{
+      padding:14px;border-radius:13px;border:1px solid var(--line-soft);background:#0c1a2d;color:white;text-align:left
+    }
+    .quick:hover{border-color:#315174;background:#10223a}.quick strong{display:block;font-size:11px;margin-bottom:5px}.quick span{font-size:10px;color:var(--muted)}
+    .toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap}
+    .toolbar-left,.toolbar-right{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+    .input,.select{
+      border:1px solid var(--line);background:#0a1728;color:white;border-radius:10px;padding:10px 11px;font-size:11px;outline:0
+    }
+    .input:focus,.select:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.09)}
+    .input.search{min-width:250px}
+    .tag{padding:5px 7px;border-radius:8px;background:#122641;color:#a9bed7;font-size:9px;border:1px solid rgba(255,255,255,.05)}
+    .status-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:6px;background:var(--green)}
+    .status-dot.yellow{background:var(--yellow)}.status-dot.red{background:var(--red)}
+    .pos-layout{display:grid;grid-template-columns:minmax(0,1.55fr) 380px;gap:16px;align-items:start}
+    .product-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+    .product-card{
+      min-height:126px;padding:13px;border:1px solid var(--line-soft);border-radius:14px;background:#0c1b2f;
+      display:flex;flex-direction:column;justify-content:space-between;transition:.18s transform,.18s border-color
+    }
+    .product-card:hover{transform:translateY(-2px);border-color:#315b86}
+    .product-card .mini-img{height:52px;border-radius:10px;background:linear-gradient(135deg,#183b61,#10233b);display:grid;place-items:center;font-size:22px}
+    .product-card strong{font-size:11px;margin-top:9px}.product-card small{font-size:9px;color:var(--muted)}
+    .product-card .price{font-size:13px;color:#dbeafe;font-weight:800;margin-top:7px}
+    .cart{position:sticky;top:22px;padding:17px}
+    .cart-items{display:flex;flex-direction:column;gap:9px;margin:14px 0;max-height:330px;overflow:auto}
+    .cart-empty{text-align:center;padding:34px 12px;color:var(--muted);font-size:11px;border:1px dashed var(--line);border-radius:12px}
+    .cart-item{display:grid;grid-template-columns:1fr auto;gap:10px;padding:10px;border-radius:12px;background:#0a182a;border:1px solid var(--line-soft)}
+    .cart-item strong{font-size:11px}.cart-item small{color:var(--muted);font-size:9px;display:block;margin-top:4px}
+    .qty{display:flex;align-items:center;gap:7px}
+    .qty button{width:24px;height:24px;border-radius:7px;border:1px solid var(--line);background:#132641;color:white}
+    .qty span{font-size:11px;min-width:14px;text-align:center}
+    .totals{border-top:1px solid var(--line-soft);padding-top:12px;display:flex;flex-direction:column;gap:8px}
+    .total-row{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+    .total-row.final{font-size:16px;color:white;font-weight:800;padding-top:5px}
+    .payment-options{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:12px 0}
+    .payment-option{border:1px solid var(--line);background:#0a1829;color:#a9bed7;border-radius:9px;padding:9px 5px;font-size:9px;font-weight:700}
+    .payment-option.active{border-color:var(--blue);background:rgba(59,130,246,.11);color:#d9ebff}
+    .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+    .field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}
+    .field label{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#7f94ad;font-weight:750}
+    .field input,.field select,.field textarea{width:100%;border:1px solid var(--line);background:#0a1728;color:white;border-radius:10px;padding:10px 11px;font-size:11px;outline:0}
+    .field textarea{min-height:78px;resize:vertical}
+    .delivery-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    .delivery-card{padding:15px;border-radius:14px;border:1px solid var(--line-soft);background:#0c1b2f}
+    .delivery-card h3{font-size:12px;margin:8px 0 5px}.delivery-card p{font-size:10px;line-height:1.5;color:var(--muted);margin:0 0 11px}
+    .delivery-meta{display:flex;justify-content:space-between;gap:10px;font-size:9px;color:#7990aa;margin-top:9px}
+    .users-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    .user-card{padding:16px}.user-head{display:flex;align-items:center;gap:10px}.user-avatar{width:40px;height:40px;border-radius:12px;background:#143157;display:grid;place-items:center;font-weight:800;font-size:12px}
+    .user-card h3{font-size:12px;margin:0}.user-card p{font-size:10px;color:var(--muted);margin:4px 0 12px}
+    .permissions{display:flex;gap:6px;flex-wrap:wrap}
+    .module-choice{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:16px}
+    .choice{padding:18px;border:1px solid var(--line-soft);border-radius:16px;background:#0b192c}
+    .choice.active{border-color:rgba(249,115,22,.5);box-shadow:0 0 0 3px rgba(249,115,22,.06)}
+    .choice h3{margin:0 0 6px;font-size:14px}.choice p{margin:0 0 13px;font-size:10px;line-height:1.55;color:var(--muted)}
+    .notice{padding:12px 14px;border-radius:12px;background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.16);font-size:10px;color:#b8d8ff;line-height:1.5}
+    .catalog-preview{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
+    .store-hero{padding:22px;min-height:220px;background:linear-gradient(135deg,#f6f8fb,#eef3f8);color:#0f172a;border-radius:16px}
+    .store-brand{font-weight:900;font-size:20px}.store-brand span{color:#f97316}.store-hero h2{font-size:30px;max-width:430px;margin:38px 0 8px;letter-spacing:-1.1px}.store-hero p{color:#64748b;font-size:11px;max-width:420px;line-height:1.6}
+    .store-products{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:17px}.store-product{background:white;border:1px solid #e4e9f0;border-radius:12px;padding:10px}.store-product strong{font-size:10px;display:block}.store-product span{font-size:9px;color:#64748b}
+    .settings-list{display:flex;flex-direction:column;gap:10px}.setting-row{display:flex;justify-content:space-between;gap:15px;align-items:center;padding:13px;border-radius:12px;border:1px solid var(--line-soft);background:#0b192b}.setting-row strong{font-size:11px;display:block}.setting-row span{font-size:9px;color:var(--muted)}
+    .switch{width:38px;height:21px;border-radius:999px;background:#1a304d;border:1px solid #2a4567;padding:2px;display:flex;justify-content:flex-start}
+    .switch.on{background:#1d4ed8;justify-content:flex-end}.switch::after{content:"";width:15px;height:15px;border-radius:50%;background:white}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(3,8,15,.72);backdrop-filter:blur(7px);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+    .modal-backdrop.open{display:flex}
+    .modal{width:min(560px,100%);padding:20px;background:#0e1c30;border:1px solid #2a4262;border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+    .modal h2{font-size:17px;margin:0}.modal p{font-size:10px;color:var(--muted);line-height:1.5}
+    .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+    .toast{position:fixed;right:22px;bottom:22px;background:#10223a;border:1px solid #2b4b70;color:#e8f3ff;padding:12px 14px;border-radius:12px;box-shadow:var(--shadow);font-size:11px;opacity:0;pointer-events:none;transform:translateY(10px);transition:.2s;z-index:120}
+    .toast.show{opacity:1;transform:translateY(0)}
+    @media (max-width:1180px){
+      :root{--sidebar:220px}.kpis{grid-template-columns:repeat(2,1fr)}.product-grid{grid-template-columns:repeat(3,1fr)}.pos-layout{grid-template-columns:1fr 340px}.grid-2{grid-template-columns:1fr}.delivery-grid,.users-grid{grid-template-columns:repeat(2,1fr)}
+    }
+    @media (max-width:860px){
+      .app-shell{display:block}.sidebar{position:fixed;left:-270px;width:250px;transition:.2s;box-shadow:30px 0 60px rgba(0,0,0,.35)}.sidebar.open{left:0}
+      .main{padding:16px}.mobile-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px}.mobile-header .brand{font-size:20px}
+      .mobile-menu{border:1px solid var(--line);background:#0d1b2f;color:white;border-radius:10px;padding:8px 10px}
+      .topbar{align-items:flex-start}.topbar h1{font-size:22px}.pos-layout{grid-template-columns:1fr}.cart{position:static}.product-grid{grid-template-columns:repeat(3,1fr)}
+      .catalog-preview,.module-choice{grid-template-columns:1fr}.delivery-grid,.users-grid{grid-template-columns:1fr 1fr}
+    }
+    @media (max-width:600px){
+      .main{padding:13px}.topbar{flex-direction:column}.top-actions{width:100%}.top-actions .btn{flex:1}.kpis{grid-template-columns:1fr 1fr;gap:9px}.kpi{padding:14px;min-height:104px}.kpi-value{font-size:20px}
+      .product-grid{grid-template-columns:repeat(2,1fr)}.delivery-grid,.users-grid,.grid-3{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.input.search{min-width:0;width:100%}.toolbar-left,.toolbar-right{width:100%}.toolbar-left>*{flex:1}
+    }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-wrap">
+      <div class="brand">comerc<span class="ia">IA</span>ndo</div>
+      <div class="brand-sub">by Andes Solutions</div>
+    </div>
+    <div class="plan-chip"><span>Plan activo</span><strong>PREMIUM</strong></div>
+
+    <nav class="nav" aria-label="Navegación principal">
+      <button class="active" data-view="home"><span class="nav-icon">⌂</span>Inicio</button>
+
+      <div class="nav-label">Operación</div>
+      <button data-view="pos"><span class="nav-icon">POS</span>Punto de venta</button>
+      <button data-view="sales"><span class="nav-icon">$</span>Ventas y pedidos</button>
+      <button data-view="payments"><span class="nav-icon">P</span>Pagos</button>
+
+      <div class="nav-label">Productos</div>
+      <button data-view="catalog"><span class="nav-icon">WEB</span>Tienda / catálogo</button>
+      <button data-view="products"><span class="nav-icon">#</span>Productos y servicios</button>
+      <button data-view="stock"><span class="nav-icon">ST</span>Stock Pro</button>
+      <button data-view="deliveries"><span class="nav-icon">✓</span>Entrega segura</button>
+
+      <div class="nav-label">Administración</div>
+      <button data-view="users"><span class="nav-icon">U</span>Usuarios</button>
+      <button data-view="business"><span class="nav-icon">+</span>Módulo empresarial</button>
+      <button data-view="settings"><span class="nav-icon">⚙</span>Configuración</button>
+    </nav>
+
+    <div class="sidebar-foot">
+      <div class="profile">
+        <div class="avatar">AS</div>
+        <div><strong>Comercio Demo</strong><span>Administrador</span></div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="mobile-header">
+      <div class="brand">comerc<span class="ia">IA</span>ndo</div>
+      <button class="mobile-menu" id="mobileMenu">Menú</button>
+    </div>
+
+    <section class="view active" id="view-home">
+      <div class="topbar">
+        <div><h1>Resumen del negocio</h1><p>Tu operación comercial en una sola vista.</p></div>
+        <div class="top-actions"><span class="status">● Operativo</span><button class="btn primary" data-go="pos">+ Nueva venta</button></div>
+      </div>
+
+      <div class="kpis">
+        <div class="card kpi"><div class="kpi-top"><span class="kpi-label">Ventas de hoy</span><span class="kpi-icon">$</span></div><div class="kpi-value">$ 486.250</div><div class="kpi-meta positive">+ 12,8% vs. ayer</div></div>
+        <div class="card kpi"><div class="kpi-top"><span class="kpi-label">Operaciones</span><span class="kpi-icon">#</span></div><div class="kpi-value">74</div><div class="kpi-meta">Ticket prom. $ 6.571</div></div>
+        <div class="card kpi"><div class="kpi-top"><span class="kpi-label">Stock crítico</span><span class="kpi-icon">!</span></div><div class="kpi-value">6</div><div class="kpi-meta warning">Requieren atención</div></div>
+        <div class="card kpi"><div class="kpi-top"><span class="kpi-label">Entregas</span><span class="kpi-icon">✓</span></div><div class="kpi-value">9</div><div class="kpi-meta">Pendientes de completar</div></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card panel">
+          <div class="panel-head"><div><h2>Ventas por hora</h2><p>Actividad registrada durante la jornada.</p></div><span class="pill blue">HOY</span></div>
+          <div class="bars">
+            <div class="bar" data-label="09" style="height:28%"></div><div class="bar" data-label="10" style="height:38%"></div>
+            <div class="bar" data-label="11" style="height:52%"></div><div class="bar" data-label="12" style="height:78%"></div>
+            <div class="bar" data-label="13" style="height:62%"></div><div class="bar" data-label="14" style="height:44%"></div>
+            <div class="bar" data-label="15" style="height:56%"></div><div class="bar" data-label="16" style="height:68%"></div>
+            <div class="bar" data-label="17" style="height:83%"></div><div class="bar" data-label="18" style="height:100%"></div>
+          </div>
+        </div>
+
+        <div class="card panel">
+          <div class="panel-head"><div><h2>Atajos</h2><p>Acciones frecuentes.</p></div></div>
+          <div class="quick-actions">
+            <button class="quick" data-go="pos"><strong>Nueva venta</strong><span>Abrir punto de venta</span></button>
+            <button class="quick" data-go="products"><strong>Nuevo producto</strong><span>Gestionar catálogo</span></button>
+            <button class="quick" data-go="stock"><strong>Movimiento de stock</strong><span>Registrar entrada o salida</span></button>
+            <button class="quick" data-go="deliveries"><strong>Entregas</strong><span>Ver operaciones pendientes</span></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top:16px">
+        <div class="card panel">
+          <div class="panel-head"><div><h2>Stock que requiere atención</h2><p>Productos cercanos o por debajo del mínimo definido.</p></div><button class="btn ghost" data-go="stock">Ver stock</button></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Producto</th><th>Disponible</th><th>Mínimo</th><th>Nivel</th></tr></thead>
+              <tbody>
+                <tr><td><div class="product-cell"><div class="product-thumb">🥛</div><strong>Leche entera 1L</strong></div></td><td>8 un.</td><td>12 un.</td><td><div class="progress low"><span style="width:32%"></span></div></td></tr>
+                <tr><td><div class="product-cell"><div class="product-thumb">🍚</div><strong>Arroz largo fino 1kg</strong></div></td><td>14 un.</td><td>18 un.</td><td><div class="progress warn"><span style="width:48%"></span></div></td></tr>
+                <tr><td><div class="product-cell"><div class="product-thumb">🧃</div><strong>Jugo naranja 1L</strong></div></td><td>6 un.</td><td>10 un.</td><td><div class="progress low"><span style="width:26%"></span></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card panel">
+          <div class="panel-head"><div><h2>Actividad reciente</h2><p>Últimos movimientos del sistema.</p></div></div>
+          <div class="activity">
+            <div class="activity-row"><div class="activity-icon">$</div><div><strong>Venta #1042 cobrada</strong><span>Pago digital · $ 18.450</span></div><span>12:41</span></div>
+            <div class="activity-row"><div class="activity-icon">ST</div><div><strong>Movimiento de stock</strong><span>Salida · Leche entera 1L</span></div><span>12:39</span></div>
+            <div class="activity-row"><div class="activity-icon">✓</div><div><strong>Entrega completada</strong><span>Pedido #1038</span></div><span>12:31</span></div>
+            <div class="activity-row"><div class="activity-icon">#</div><div><strong>Producto actualizado</strong><span>Yerba mate 1kg</span></div><span>12:15</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-pos">
+      <div class="topbar"><div><h1>Punto de venta</h1><p>Venta rápida, cobro y actualización de stock desde una misma pantalla.</p></div><div class="top-actions"><span class="pill green">CAJA ABIERTA</span><button class="btn ghost" id="clearCart">Vaciar</button></div></div>
+      <div class="pos-layout">
+        <div class="card panel">
+          <div class="toolbar">
+            <div class="toolbar-left"><input class="input search" id="posSearch" placeholder="Buscar producto"><select class="select" id="categoryFilter"><option value="all">Todas las categorías</option><option>Bebidas</option><option>Almacén</option><option>Lácteos</option><option>Golosinas</option></select></div>
+            <div class="toolbar-right"><span class="pill blue">Stock en tiempo real</span></div>
+          </div>
+          <div class="product-grid" id="productGrid"></div>
+        </div>
+        <aside class="card cart">
+          <div class="panel-head"><div><h2>Venta actual</h2><p id="cartCount">0 productos</p></div><span class="pill"># NUEVA</span></div>
+          <div class="cart-items" id="cartItems"><div class="cart-empty">Agregá productos para comenzar la venta.</div></div>
+          <div class="totals">
+            <div class="total-row"><span>Subtotal</span><strong id="subtotal">$ 0</strong></div>
+            <div class="total-row"><span>Total</span><strong id="total">$ 0</strong></div>
+          </div>
+          <div class="payment-options" id="paymentOptions">
+            <button class="payment-option active">Efectivo</button><button class="payment-option">Débito</button><button class="payment-option">Digital</button>
+          </div>
+          <button class="btn primary" style="width:100%" id="checkoutBtn">Cobrar venta</button>
+        </aside>
+      </div>
+    </section>
+
+    <section class="view" id="view-sales">
+      <div class="topbar"><div><h1>Ventas y pedidos</h1><p>Seguimiento de operaciones comerciales generadas desde la plataforma.</p></div><div class="top-actions"><button class="btn primary" data-go="pos">+ Nueva venta</button></div></div>
+      <div class="kpis">
+        <div class="card kpi"><div class="kpi-label">Cobradas hoy</div><div class="kpi-value">$ 486.250</div><div class="kpi-meta">74 operaciones</div></div>
+        <div class="card kpi"><div class="kpi-label">Pedidos activos</div><div class="kpi-value">11</div><div class="kpi-meta">En proceso</div></div>
+        <div class="card kpi"><div class="kpi-label">Ticket promedio</div><div class="kpi-value">$ 6.571</div><div class="kpi-meta">Jornada actual</div></div>
+        <div class="card kpi"><div class="kpi-label">Pendientes de cobro</div><div class="kpi-value">3</div><div class="kpi-meta warning">Revisar</div></div>
+      </div>
+      <div class="card panel">
+        <div class="toolbar"><div class="toolbar-left"><input class="input search" placeholder="Buscar operación"><select class="select"><option>Todos los estados</option><option>Cobrada</option><option>Pendiente</option><option>Pedido</option></select></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Operación</th><th>Cliente</th><th>Canal</th><th>Total</th><th>Pago</th><th>Estado</th><th>Hora</th></tr></thead><tbody>
+          <tr><td><strong>#1042</strong></td><td>Mostrador</td><td>POS</td><td>$ 18.450</td><td>Digital</td><td><span class="pill green">Cobrada</span></td><td>12:41</td></tr>
+          <tr><td><strong>#1041</strong></td><td>María P.</td><td>Web</td><td>$ 12.870</td><td>Débito</td><td><span class="pill orange">Pedido</span></td><td>12:33</td></tr>
+          <tr><td><strong>#1040</strong></td><td>Mostrador</td><td>POS</td><td>$ 9.220</td><td>Efectivo</td><td><span class="pill green">Cobrada</span></td><td>12:28</td></tr>
+          <tr><td><strong>#1039</strong></td><td>Lucas R.</td><td>Web</td><td>$ 22.510</td><td>Pendiente</td><td><span class="pill yellow">Pendiente</span></td><td>12:16</td></tr>
+        </tbody></table></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-payments">
+      <div class="topbar"><div><h1>Pagos</h1><p>Pasarela integrada y estado de cobros vinculados a cada operación.</p></div><div class="top-actions"><span class="pill green">PASARELA ACTIVA</span></div></div>
+      <div class="grid-3">
+        <div class="card kpi"><div class="kpi-label">Cobrado hoy</div><div class="kpi-value">$ 486.250</div><div class="kpi-meta positive">Conciliación operativa</div></div>
+        <div class="card kpi"><div class="kpi-label">Pagos digitales</div><div class="kpi-value">38</div><div class="kpi-meta">51% de operaciones</div></div>
+        <div class="card kpi"><div class="kpi-label">Pendientes</div><div class="kpi-value">3</div><div class="kpi-meta warning">Esperando confirmación</div></div>
+      </div>
+      <div class="card panel" style="margin-top:16px">
+        <div class="panel-head"><div><h2>Últimos cobros</h2><p>Vista de control de la pasarela de pagos.</p></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Ref.</th><th>Operación</th><th>Medio</th><th>Monto</th><th>Estado</th><th>Hora</th></tr></thead><tbody>
+          <tr><td>PG-8842</td><td>#1042</td><td>Digital</td><td>$ 18.450</td><td><span class="pill green">Aprobado</span></td><td>12:41</td></tr>
+          <tr><td>PG-8841</td><td>#1041</td><td>Débito</td><td>$ 12.870</td><td><span class="pill green">Aprobado</span></td><td>12:33</td></tr>
+          <tr><td>PG-8839</td><td>#1039</td><td>Digital</td><td>$ 22.510</td><td><span class="pill yellow">Pendiente</span></td><td>12:16</td></tr>
+        </tbody></table></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-catalog">
+      <div class="topbar"><div><h1>Tienda / catálogo digital</h1><p>Presencia digital conectada al mismo catálogo administrado desde ComercIAndo.</p></div><div class="top-actions"><button class="btn ghost">Vista previa</button><button class="btn primary">Publicar cambios</button></div></div>
+      <div class="catalog-preview">
+        <div class="store-hero">
+          <div class="store-brand">Mi Comercio <span>Online</span></div>
+          <h2>Todo lo que necesitás, también online.</h2>
+          <p>Catálogo de demostración conectado a los productos y servicios administrados desde la plataforma.</p>
+          <div class="store-products">
+            <div class="store-product"><strong>Yerba mate 1kg</strong><span>$ 6.850 · Disponible</span></div>
+            <div class="store-product"><strong>Leche entera 1L</strong><span>$ 1.920 · Disponible</span></div>
+            <div class="store-product"><strong>Galletitas 400g</strong><span>$ 2.450 · Disponible</span></div>
+            <div class="store-product"><strong>Gaseosa cola 2.25L</strong><span>$ 3.980 · Disponible</span></div>
+          </div>
+        </div>
+        <div class="card panel">
+          <div class="panel-head"><div><h2>Configuración comercial</h2><p>Definí qué se muestra en el canal digital.</p></div></div>
+          <div class="settings-list">
+            <div class="setting-row"><div><strong>Catálogo público</strong><span>Mostrar productos publicados</span></div><div class="switch on"></div></div>
+            <div class="setting-row"><div><strong>Recibir pedidos</strong><span>Habilitar operaciones desde la web</span></div><div class="switch on"></div></div>
+            <div class="setting-row"><div><strong>Mostrar disponibilidad</strong><span>Reflejar estado de productos</span></div><div class="switch on"></div></div>
+            <div class="setting-row"><div><strong>Pagos online</strong><span>Utilizar pasarela integrada</span></div><div class="switch on"></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-products">
+      <div class="topbar"><div><h1>Productos y servicios</h1><p>Catálogo central utilizado por la tienda, el POS y el control de stock.</p></div><div class="top-actions"><button class="btn primary" id="newProductBtn">+ Nuevo producto</button></div></div>
+      <div class="card panel">
+        <div class="toolbar"><div class="toolbar-left"><input class="input search" id="productSearch" placeholder="Buscar producto o servicio"><select class="select"><option>Todas las categorías</option><option>Bebidas</option><option>Almacén</option><option>Lácteos</option></select></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Publicado</th><th>Estado</th></tr></thead><tbody id="productsTable"></tbody></table></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-stock">
+      <div class="topbar"><div><h1>Stock Pro</h1><p>Control profesional de existencias, reservas y movimientos de mercadería.</p></div><div class="top-actions"><button class="btn orange" id="movementBtn">+ Registrar movimiento</button></div></div>
+      <div class="kpis">
+        <div class="card kpi"><div class="kpi-label">Productos controlados</div><div class="kpi-value">148</div><div class="kpi-meta">Inventario activo</div></div>
+        <div class="card kpi"><div class="kpi-label">Stock crítico</div><div class="kpi-value">6</div><div class="kpi-meta warning">Bajo mínimo</div></div>
+        <div class="card kpi"><div class="kpi-label">Reservado</div><div class="kpi-value">23</div><div class="kpi-meta">Unidades comprometidas</div></div>
+        <div class="card kpi"><div class="kpi-label">Movimientos hoy</div><div class="kpi-value">92</div><div class="kpi-meta">Entradas y salidas</div></div>
+      </div>
+      <div class="card panel">
+        <div class="toolbar"><div class="toolbar-left"><input class="input search" id="stockSearch" placeholder="Buscar en inventario"><select class="select"><option>Todos los estados</option><option>Normal</option><option>Crítico</option></select></div><div class="toolbar-right"><span class="pill blue">Stock Pro activo</span></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Producto</th><th>Existencia</th><th>Reservado</th><th>Disponible</th><th>Mínimo</th><th>Estado</th></tr></thead><tbody id="stockTable"></tbody></table></div>
+      </div>
+      <div class="card panel" style="margin-top:16px">
+        <div class="panel-head"><div><h2>Últimos movimientos</h2><p>Trazabilidad operativa del inventario.</p></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Hora</th><th>Producto</th><th>Movimiento</th><th>Cantidad</th><th>Referencia</th><th>Responsable</th></tr></thead><tbody>
+          <tr><td>12:39</td><td>Leche entera 1L</td><td><span class="pill orange">Salida</span></td><td>-2 un.</td><td>Venta #1042</td><td>Administrador</td></tr>
+          <tr><td>12:28</td><td>Gaseosa cola 2.25L</td><td><span class="pill orange">Salida</span></td><td>-1 un.</td><td>Venta #1040</td><td>Administrador</td></tr>
+          <tr><td>11:52</td><td>Yerba mate 1kg</td><td><span class="pill blue">Entrada</span></td><td>+12 un.</td><td>Ajuste</td><td>Administrador</td></tr>
+        </tbody></table></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-deliveries">
+      <div class="topbar"><div><h1>Entrega segura</h1><p>Controlá las operaciones que comprometen mercadería hasta completar su entrega.</p></div><div class="top-actions"><span class="pill orange">STOCK PRO</span></div></div>
+      <div class="notice" style="margin-bottom:15px">La entrega segura está vinculada a Stock Pro: permite mantener controladas las existencias comprometidas hasta que la operación se complete.</div>
+      <div class="delivery-grid">
+        <div class="delivery-card"><span class="pill yellow">PENDIENTE</span><h3>Pedido #1041</h3><p>4 productos · Cliente: María P.<br>Mercadería reservada.</p><button class="btn primary delivery-action">Preparar entrega</button><div class="delivery-meta"><span>$ 12.870</span><span>12:33</span></div></div>
+        <div class="delivery-card"><span class="pill orange">PREPARADO</span><h3>Pedido #1038</h3><p>6 productos · Cliente: Javier L.<br>Listo para completar la entrega.</p><button class="btn orange delivery-action">Completar entrega</button><div class="delivery-meta"><span>$ 19.430</span><span>11:58</span></div></div>
+        <div class="delivery-card"><span class="pill blue">RESERVADO</span><h3>Pedido #1037</h3><p>2 productos · Cliente: Sofía M.<br>Stock comprometido en la operación.</p><button class="btn ghost delivery-action">Ver detalle</button><div class="delivery-meta"><span>$ 7.960</span><span>11:47</span></div></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-users">
+      <div class="topbar"><div><h1>Usuarios administrativos</h1><p>Premium incluye acceso para hasta 3 usuarios administrativos.</p></div><div class="top-actions"><span class="pill blue">2 / 3 ACTIVOS</span><button class="btn primary">+ Invitar usuario</button></div></div>
+      <div class="users-grid">
+        <div class="card user-card"><div class="user-head"><div class="user-avatar">MA</div><div><h3>Matías</h3><p>Administrador principal</p></div></div><div class="permissions"><span class="tag">Ventas</span><span class="tag">Stock Pro</span><span class="tag">Configuración</span></div></div>
+        <div class="card user-card"><div class="user-head"><div class="user-avatar">GC</div><div><h3>Guillermo</h3><p>Administrador</p></div></div><div class="permissions"><span class="tag">Ventas</span><span class="tag">Productos</span><span class="tag">Entregas</span></div></div>
+        <div class="card user-card" style="border-style:dashed;display:grid;place-items:center;min-height:150px"><div style="text-align:center"><div style="font-size:24px;color:#6c84a0">+</div><strong style="font-size:11px">1 acceso disponible</strong><p style="font-size:9px;color:var(--muted)">Premium admite hasta 3 usuarios</p></div></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-business">
+      <div class="topbar"><div><h1>Módulo empresarial</h1><p>Premium permite elegir uno de los dos módulos adicionales.</p></div><div class="top-actions"><span class="pill orange">1 MÓDULO INCLUIDO</span></div></div>
+      <div class="module-choice">
+        <div class="choice active" data-module="quotes"><span class="pill orange">DEMO ACTIVA</span><h3>Presupuestos y cotizaciones</h3><p>Prepará propuestas comerciales vinculadas a productos o servicios del catálogo.</p><button class="btn orange module-select">Usar en esta demo</button></div>
+        <div class="choice" data-module="staff"><span class="pill">ALTERNATIVA</span><h3>Nómina de personal y turnos</h3><p>Administrá personal y organización de turnos como módulo empresarial alternativo.</p><button class="btn ghost module-select">Ver alternativa</button></div>
+      </div>
+      <div id="quotesModule" class="card panel">
+        <div class="panel-head"><div><h2>Presupuestos recientes</h2><p>Módulo empresarial seleccionado para esta demostración.</p></div><button class="btn primary">+ Nuevo presupuesto</button></div>
+        <div class="table-wrap"><table><thead><tr><th>Nro.</th><th>Cliente</th><th>Detalle</th><th>Total</th><th>Estado</th></tr></thead><tbody>
+          <tr><td>P-0018</td><td>Estudio Norte</td><td>Productos varios</td><td>$ 84.500</td><td><span class="pill yellow">Enviado</span></td></tr>
+          <tr><td>P-0017</td><td>Cliente Demo</td><td>Servicio + productos</td><td>$ 126.000</td><td><span class="pill green">Aceptado</span></td></tr>
+        </tbody></table></div>
+      </div>
+      <div id="staffModule" class="card panel hidden">
+        <div class="panel-head"><div><h2>Personal y turnos</h2><p>Alternativa disponible para clientes que elijan este módulo.</p></div><button class="btn primary">+ Nuevo turno</button></div>
+        <div class="table-wrap"><table><thead><tr><th>Persona</th><th>Rol</th><th>Turno</th><th>Estado</th></tr></thead><tbody>
+          <tr><td>Marina López</td><td>Atención</td><td>09:00 — 17:00</td><td><span class="pill green">Activo</span></td></tr>
+          <tr><td>Juan Pérez</td><td>Administración</td><td>12:00 — 20:00</td><td><span class="pill blue">Programado</span></td></tr>
+        </tbody></table></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-settings">
+      <div class="topbar"><div><h1>Configuración</h1><p>Preferencias generales de la plataforma y del negocio.</p></div><div class="top-actions"><button class="btn primary" id="saveSettings">Guardar cambios</button></div></div>
+      <div class="grid-2">
+        <div class="card panel">
+          <div class="panel-head"><div><h2>Identidad del negocio</h2><p>Datos utilizados en la experiencia administrativa y digital.</p></div></div>
+          <div class="form-grid">
+            <div class="field"><label>Nombre comercial</label><input value="Comercio Demo"></div>
+            <div class="field"><label>Rubro</label><input value="Comercio minorista"></div>
+            <div class="field"><label>Correo</label><input value="admin@comercio.demo"></div>
+            <div class="field"><label>Teléfono</label><input value="+54 11 0000-0000"></div>
+            <div class="field full"><label>Descripción</label><textarea>Comercio administrado con ComercIAndo Premium.</textarea></div>
+          </div>
+        </div>
+        <div class="card panel">
+          <div class="panel-head"><div><h2>Capacidades Premium</h2><p>Estado de las herramientas incluidas en este plan.</p></div></div>
+          <div class="settings-list">
+            <div class="setting-row"><div><strong>Punto de venta</strong><span>Incluido en Premium</span></div><div class="switch on"></div></div>
+            <div class="setting-row"><div><strong>Stock Pro</strong><span>Incluido en Premium</span></div><div class="switch on"></div></div>
+            <div class="setting-row"><div><strong>Entrega segura</strong><span>Asociada a Stock Pro</span></div><div class="switch on"></div></div>
+            <div class="setting-row"><div><strong>Pasarela de pagos</strong><span>Incluida en Premium</span></div><div class="switch on"></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="modal-backdrop" id="productModal">
+  <div class="modal">
+    <div class="panel-head"><div><h2>Nuevo producto</h2><p>Alta rápida para el catálogo de ComercIAndo.</p></div><button class="btn ghost modal-close">Cerrar</button></div>
+    <div class="form-grid">
+      <div class="field full"><label>Nombre</label><input id="newProductName" placeholder="Ej. Café molido 500g"></div>
+      <div class="field"><label>Categoría</label><select id="newProductCategory"><option>Almacén</option><option>Bebidas</option><option>Lácteos</option><option>Golosinas</option></select></div>
+      <div class="field"><label>Precio</label><input id="newProductPrice" type="number" placeholder="0"></div>
+      <div class="field"><label>Stock inicial</label><input id="newProductStock" type="number" value="0"></div>
+      <div class="field"><label>Stock mínimo</label><input id="newProductMin" type="number" value="5"></div>
+    </div>
+    <div class="modal-actions"><button class="btn ghost modal-close">Cancelar</button><button class="btn primary" id="saveProductBtn">Guardar producto</button></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="movementModal">
+  <div class="modal">
+    <div class="panel-head"><div><h2>Registrar movimiento</h2><p>Movimiento manual dentro de Stock Pro.</p></div><button class="btn ghost modal-close">Cerrar</button></div>
+    <div class="form-grid">
+      <div class="field full"><label>Producto</label><select id="movementProduct"></select></div>
+      <div class="field"><label>Tipo</label><select id="movementType"><option value="entry">Entrada</option><option value="exit">Salida</option></select></div>
+      <div class="field"><label>Cantidad</label><input id="movementQty" type="number" min="1" value="1"></div>
+      <div class="field full"><label>Referencia</label><input id="movementRef" placeholder="Ej. Ajuste manual"></div>
+    </div>
+    <div class="modal-actions"><button class="btn ghost modal-close">Cancelar</button><button class="btn orange" id="saveMovementBtn">Registrar</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast">Acción completada</div>
+
+<script>
+  const products = [
+    {id:1,name:'Yerba mate 1kg',category:'Almacén',price:6850,stock:42,reserved:4,min:15,emoji:'🧉',published:true},
+    {id:2,name:'Leche entera 1L',category:'Lácteos',price:1920,stock:10,reserved:2,min:12,emoji:'🥛',published:true},
+    {id:3,name:'Galletitas 400g',category:'Almacén',price:2450,stock:35,reserved:3,min:10,emoji:'🍪',published:true},
+    {id:4,name:'Gaseosa cola 2.25L',category:'Bebidas',price:3980,stock:28,reserved:2,min:12,emoji:'🥤',published:true},
+    {id:5,name:'Arroz largo fino 1kg',category:'Almacén',price:2380,stock:16,reserved:2,min:18,emoji:'🍚',published:true},
+    {id:6,name:'Jugo naranja 1L',category:'Bebidas',price:2850,stock:7,reserved:1,min:10,emoji:'🧃',published:true},
+    {id:7,name:'Chocolate 100g',category:'Golosinas',price:2100,stock:31,reserved:0,min:8,emoji:'🍫',published:true},
+    {id:8,name:'Fideos secos 500g',category:'Almacén',price:1680,stock:54,reserved:4,min:15,emoji:'🍝',published:true}
+  ];
+  const cart = new Map();
+
+  const money = n => '$ ' + Number(n).toLocaleString('es-AR');
+  const showToast = (msg) => {
+    const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+    clearTimeout(window.__toast); window.__toast=setTimeout(()=>t.classList.remove('show'),2200);
+  };
+
+  function activateView(name){
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.querySelectorAll('.nav button[data-view]').forEach(b=>b.classList.remove('active'));
+    document.getElementById('view-'+name)?.classList.add('active');
+    document.querySelector('.nav button[data-view="'+name+'"]')?.classList.add('active');
+    document.getElementById('sidebar').classList.remove('open');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  document.querySelectorAll('[data-view]').forEach(btn=>btn.addEventListener('click',()=>activateView(btn.dataset.view)));
+  document.querySelectorAll('[data-go]').forEach(btn=>btn.addEventListener('click',()=>activateView(btn.dataset.go)));
+  document.getElementById('mobileMenu').addEventListener('click',()=>document.getElementById('sidebar').classList.toggle('open'));
+
+  function renderProductGrid(){
+    const q=document.getElementById('posSearch').value.toLowerCase().trim();
+    const cat=document.getElementById('categoryFilter').value;
+    const filtered=products.filter(p=>(!q||p.name.toLowerCase().includes(q))&&(cat==='all'||p.category===cat));
+    document.getElementById('productGrid').innerHTML=filtered.map(p=>`
+      <button class="product-card" data-add="${p.id}">
+        <div class="mini-img">${p.emoji}</div>
+        <strong>${p.name}</strong>
+        <small>${p.category} · ${Math.max(0,p.stock-p.reserved)} disp.</small>
+        <div class="price">${money(p.price)}</div>
+      </button>`).join('');
+    document.querySelectorAll('[data-add]').forEach(b=>b.addEventListener('click',()=>addToCart(Number(b.dataset.add))));
+  }
+
+  function addToCart(id){
+    const p=products.find(x=>x.id===id); const available=p.stock-p.reserved;
+    const current=cart.get(id)||0;
+    if(current>=available){showToast('No hay más unidades disponibles');return}
+    cart.set(id,current+1);renderCart();
+  }
+
+  function renderCart(){
+    const box=document.getElementById('cartItems');
+    if(!cart.size){box.innerHTML='<div class="cart-empty">Agregá productos para comenzar la venta.</div>'}
+    else{
+      box.innerHTML=[...cart.entries()].map(([id,qty])=>{
+        const p=products.find(x=>x.id===id);
+        return `<div class="cart-item"><div><strong>${p.name}</strong><small>${money(p.price)} c/u · ${money(p.price*qty)}</small></div>
+          <div class="qty"><button data-dec="${id}">−</button><span>${qty}</span><button data-inc="${id}">+</button></div></div>`;
+      }).join('');
+      document.querySelectorAll('[data-dec]').forEach(b=>b.addEventListener('click',()=>{const id=Number(b.dataset.dec);const q=cart.get(id)-1;q<=0?cart.delete(id):cart.set(id,q);renderCart()}));
+      document.querySelectorAll('[data-inc]').forEach(b=>b.addEventListener('click',()=>addToCart(Number(b.dataset.inc))));
+    }
+    const count=[...cart.values()].reduce((a,b)=>a+b,0);
+    const total=[...cart.entries()].reduce((sum,[id,q])=>sum+products.find(p=>p.id===id).price*q,0);
+    document.getElementById('cartCount').textContent=count+' '+(count===1?'producto':'productos');
+    document.getElementById('subtotal').textContent=money(total);
+    document.getElementById('total').textContent=money(total);
+  }
+
+  document.getElementById('clearCart').addEventListener('click',()=>{cart.clear();renderCart()});
+  document.querySelectorAll('.payment-option').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.payment-option').forEach(x=>x.classList.remove('active'));b.classList.add('active')}));
+  document.getElementById('checkoutBtn').addEventListener('click',()=>{
+    if(!cart.size){showToast('Agregá al menos un producto');return}
+    [...cart.entries()].forEach(([id,q])=>{const p=products.find(x=>x.id===id);p.stock=Math.max(0,p.stock-q)});
+    cart.clear();renderCart();renderStock();renderProductGrid();renderProductsTable();showToast('Venta cobrada y stock actualizado');
+  });
+  document.getElementById('posSearch').addEventListener('input',renderProductGrid);
+  document.getElementById('categoryFilter').addEventListener('change',renderProductGrid);
+
+  function stockStatus(p){const available=p.stock-p.reserved;if(available<=p.min)return '<span class="pill yellow"><span class="status-dot yellow"></span>Crítico</span>';return '<span class="pill green"><span class="status-dot"></span>Normal</span>'}
+  function renderStock(){
+    const q=(document.getElementById('stockSearch')?.value||'').toLowerCase();
+    document.getElementById('stockTable').innerHTML=products.filter(p=>p.name.toLowerCase().includes(q)).map(p=>`
+      <tr><td><div class="product-cell"><div class="product-thumb">${p.emoji}</div><div><strong>${p.name}</strong><br><span class="muted">${p.category}</span></div></div></td>
+      <td>${p.stock} un.</td><td>${p.reserved} un.</td><td><strong>${p.stock-p.reserved} un.</strong></td><td>${p.min} un.</td><td>${stockStatus(p)}</td></tr>`).join('');
+  }
+  document.getElementById('stockSearch').addEventListener('input',renderStock);
+
+  function renderProductsTable(){
+    const q=(document.getElementById('productSearch')?.value||'').toLowerCase();
+    document.getElementById('productsTable').innerHTML=products.filter(p=>p.name.toLowerCase().includes(q)).map(p=>`
+      <tr><td><div class="product-cell"><div class="product-thumb">${p.emoji}</div><strong>${p.name}</strong></div></td><td>${p.category}</td><td>${money(p.price)}</td><td>${p.stock-p.reserved} disp.</td><td>${p.published?'Sí':'No'}</td><td><span class="pill green">Activo</span></td></tr>`).join('');
+  }
+  document.getElementById('productSearch').addEventListener('input',renderProductsTable);
+
+  function openModal(id){document.getElementById(id).classList.add('open')}
+  function closeModals(){document.querySelectorAll('.modal-backdrop').forEach(m=>m.classList.remove('open'))}
+  document.querySelectorAll('.modal-close').forEach(b=>b.addEventListener('click',closeModals));
+  document.querySelectorAll('.modal-backdrop').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)closeModals()}));
+  document.getElementById('newProductBtn').addEventListener('click',()=>openModal('productModal'));
+  document.getElementById('movementBtn').addEventListener('click',()=>{
+    document.getElementById('movementProduct').innerHTML=products.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+    openModal('movementModal');
+  });
+
+  document.getElementById('saveProductBtn').addEventListener('click',()=>{
+    const name=document.getElementById('newProductName').value.trim();
+    const price=Number(document.getElementById('newProductPrice').value);
+    if(!name||!price){showToast('Completá nombre y precio');return}
+    products.push({id:Date.now(),name,category:document.getElementById('newProductCategory').value,price,stock:Number(document.getElementById('newProductStock').value)||0,reserved:0,min:Number(document.getElementById('newProductMin').value)||0,emoji:'📦',published:true});
+    closeModals();renderProductGrid();renderProductsTable();renderStock();showToast('Producto creado');
+    document.getElementById('newProductName').value='';document.getElementById('newProductPrice').value='';
+  });
+
+  document.getElementById('saveMovementBtn').addEventListener('click',()=>{
+    const p=products.find(x=>x.id===Number(document.getElementById('movementProduct').value));
+    const qty=Math.max(1,Number(document.getElementById('movementQty').value)||1);
+    const type=document.getElementById('movementType').value;
+    if(type==='exit' && qty>p.stock-p.reserved){showToast('Cantidad superior al stock disponible');return}
+    p.stock += type==='entry'?qty:-qty;
+    closeModals();renderStock();renderProductGrid();renderProductsTable();showToast('Movimiento registrado');
+  });
+
+  document.querySelectorAll('.delivery-action').forEach(b=>b.addEventListener('click',()=>showToast('Estado de entrega actualizado')));
+  document.getElementById('saveSettings').addEventListener('click',()=>showToast('Configuración guardada'));
+
+  document.querySelectorAll('.module-select').forEach(b=>b.addEventListener('click',()=>{
+    const choice=b.closest('.choice'); const module=choice.dataset.module;
+    document.querySelectorAll('.choice').forEach(c=>c.classList.remove('active'));choice.classList.add('active');
+    document.getElementById('quotesModule').classList.toggle('hidden',module!=='quotes');
+    document.getElementById('staffModule').classList.toggle('hidden',module!=='staff');
+    showToast(module==='quotes'?'Vista de presupuestos activada':'Vista de personal y turnos activada');
+  }));
+
+  document.querySelectorAll('.switch').forEach(s=>s.addEventListener('click',()=>s.classList.toggle('on')));
+
+  renderProductGrid();
+  renderCart();
+  renderStock();
+  renderProductsTable();
+</script>
+</body>
 </html>
