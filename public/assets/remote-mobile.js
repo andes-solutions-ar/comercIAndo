@@ -8,7 +8,24 @@
  const note=(msg)=>{$('#feedback').textContent=msg};
  const safeSend=d=>{try{if(conn?.open)conn.send(d)}catch{}};
  const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
- function sound(ok){try{if(!soundEnabled)return;const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const c=new C(),o=c.createOscillator(),g=c.createGain(),t=c.currentTime;o.type='sine';o.frequency.setValueAtTime(ok?680:260,t);o.frequency.exponentialRampToValueAtTime(ok?1100:175,t+.12);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.03,t+.015);g.gain.exponentialRampToValueAtTime(.0001,t+.19);o.connect(g).connect(c.destination);o.start();o.stop(t+.2);o.onended=()=>c.close();}catch{}try{navigator.vibrate?.(ok?60:[45,65,45]);}catch{}}
+ function sound(ok){
+  if(!soundEnabled)return;
+  try{
+   const Audio=window.AudioContext||window.webkitAudioContext;
+   if(!Audio)return;
+   const c=new Audio(),osc=c.createOscillator(),gain=c.createGain(),at=c.currentTime+0.004;
+   osc.type='square';
+   osc.frequency.setValueAtTime(ok?1050:330,at);
+   osc.frequency.exponentialRampToValueAtTime(ok?920:230,at+.105);
+   gain.gain.setValueAtTime(.0001,at);
+   gain.gain.exponentialRampToValueAtTime(ok?.014:.011,at+.009);
+   gain.gain.exponentialRampToValueAtTime(.0001,at+(ok?.12:.18));
+   osc.connect(gain);gain.connect(c.destination);
+   osc.start(at);osc.stop(at+(ok?.125:.185));
+   osc.onended=()=>c.close().catch(()=>{});
+  }catch{}
+  try{navigator.vibrate?.(ok?60:[45,65,45])}catch{}
+ }
  function setButtons(){const linked=approved&&conn?.open;$('#start').disabled=!linked||reading;$('#again').disabled=!linked||reading;$('#submitManual').disabled=!linked||inFlight;$('#torch').disabled=!reading;$('#end').disabled=!conn?.open;}
  function fail(text){$('#result').className='result visible error';$('#resIcon').textContent='⚠';$('#resName').textContent='Atención';$('#resNote').textContent=text;$('#resPrice').textContent='';note(text);sound(false)}
  function stopCamera(){reading=false;if(loop){cancelAnimationFrame(loop);loop=0}try{readerControls?.stop?.()}catch{}readerControls=null;try{stream?.getTracks()?.forEach(t=>t.stop())}catch{}stream=null;$('#video').srcObject=null;$('#camera').setAttribute('aria-busy','false');$('#cameraText').textContent='Cámara detenida';$('#torch').textContent='♧ Linterna';torchOn=false;setButtons();}
