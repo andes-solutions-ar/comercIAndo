@@ -1810,6 +1810,7 @@ body.remake-ready #v>.v8-screen,body.remake-ready #v>.ex-dashboard{animation:rem
           <section class="sp-product-section"><h3>▣ Datos generales</h3><div class="form-stack">
             <div class="form-field full"><label for="npName">Nombre del producto *</label><input id="npName" maxlength="150" placeholder="Ej. Yerba mate Playadito 1 kg" required></div>
             <div class="form-field"><label for="npCode">Código *</label><input id="npCode" maxlength="35" placeholder="YER001" required></div>
+<div class="form-field full"><label for="npBarcode">Código de barras (EAN, UPC o Code 128)</label><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><input id="npBarcode" maxlength="80" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Escaneá o escribí el código" style="flex:1 1 190px;min-width:160px"><button type="button" class="btn g sm" onclick="window.v20ScanForProduct()">📷 Escanear</button></div><small class="muted">Opcional · Vinculá el código de la etiqueta mediante cámara o lector USB/Bluetooth.</small></div>
             <div class="form-field"><label for="npCat">Categoría *</label><select id="npCat" required></select></div>
             <div class="form-field full"><label for="npSupplier">Proveedor</label><select id="npSupplier"><option value="">Sin asignar</option></select></div>
             <input id="npHue" type="hidden" value="210">
@@ -3318,6 +3319,7 @@ window.openProductModal = function(index = null) {
     $('#npCat').value = p[1];
     $('#npPrice').value = p[2];
     const pm=productMeta(p);
+    $('#npBarcode').value=pm.barcode||pm.barcodes?.[0]||'';
     $('#npCode').value=pm.code;$('#npSupplier').value=pm.supplierId||'';
     $('#npCost').value = p[9]==null?'':pm.initialCost;$('#npFreight').value=pm.freight;
     $('#npPolicy').value=pm.policy;$('#npCommercialStatus').value=pm.status;
@@ -3331,6 +3333,7 @@ window.openProductModal = function(index = null) {
     $('#npStock').value = 0;
     $('#npMin').value = 8;
     $('#npCode').value=suggestProductCode();
+    $('#npBarcode').value='';
     $('#npCost').value='0';$('#npFreight').value='0';
     $('#npGondolaQuota').value='0';$('#npOnlineQuota').value='0';$('#npExtraQuota').value='0';
     $('#npPolicy').value='unlimited';$('#npCommercialStatus').value='enabled';
@@ -3362,6 +3365,10 @@ $('#formProduct').addEventListener('submit', e => {
   const policy=previousProduct?previousMeta.policy:$('#npPolicy').value,status=previousProduct?previousMeta.status:$('#npCommercialStatus').value;
   const gondolaQuota=previousProduct?Number(previousMeta.gondolaQuota||0):Number($('#npGondolaQuota').value),onlineQuota=previousProduct?Number(previousMeta.onlineQuota||0):Number($('#npOnlineQuota').value),extraQuota=previousProduct?Number(previousMeta.extraQuota||0):Number($('#npExtraQuota').value);
   if(!name||!code||!Number.isFinite(price)||price<0||![initialCost,freight].every(x=>Number.isFinite(x)&&x>=0)){toast('Revisá el nombre, código, costos y precio.');return;}
+  const barcode=String($('#npBarcode')?.value||'').trim();
+  if(barcode&&!/^[A-Za-z0-9._-]{4,80}$/.test(barcode)){toast('Código de barras inválido: usá de 4 a 80 letras, números, puntos o guiones.');return;}
+  const linked=barcode?window.comerciandoBarcodeV2?.find(barcode):null;
+  if(linked&&(linked.kind!=='unit'||linked.product!==previousProduct)){toast('Este código ya pertenece a otro producto o presentación.');return;}
   if(P.some((q,i)=>i!==editingProductIndex&&productMeta(q).code===code)){toast('Ya existe otro producto con ese código.');return;}
   if(P.some((q,i)=>i!==editingProductIndex&&q[0].toLowerCase()===name.toLowerCase())){toast('Ya existe un producto con ese nombre.');return;}
   if(supplierId&&!supById(supplierId)){toast('Elegí un proveedor válido.');return;}
@@ -3369,7 +3376,7 @@ $('#formProduct').addEventListener('submit', e => {
   const stock = Number($('#npStock').value) || 0;
   const min = Number($('#npMin').value) || 0;
   if(!Number.isSafeInteger(stock)||!Number.isSafeInteger(min)||stock<0||min<0){toast('Las existencias deben ser cantidades enteras positivas.');return;}
-  const meta={...previousMeta,id:previousMeta.id||uid(),code,supplierId,initialCost,freight,policy,status,gondolaQuota,onlineQuota,onlineUnits:previousProduct?Number(previousMeta.onlineUnits||0):0,extraQuota:policy==='limited'?extraQuota:0,restrictedInitialized:policy==='restricted'?(gondolaQty(previousProduct)>0||previousMeta.restrictedInitialized):false};
+  const meta={...previousMeta,id:previousMeta.id||uid(),code,barcode,supplierId,initialCost,freight,policy,status,gondolaQuota,onlineQuota,onlineUnits:previousProduct?Number(previousMeta.onlineUnits||0):0,extraQuota:policy==='limited'?extraQuota:0,restrictedInitialized:policy==='restricted'?(gondolaQty(previousProduct)>0||previousMeta.restrictedInitialized):false};
   const existingDisplayed=previousProduct?gondolaQty(previousProduct):0;
   if(stock<existingDisplayed+onlineReserved(previousProduct||null,meta)+extraAvailable(previousProduct)){toast('Las existencias no cubren las unidades exhibidas y reservadas online.');return;}
   if(policy!=='unlimited' && (existingDisplayed>gondolaQuota || gondolaQuota+onlineQuota>stock)){toast('Revisá los cupos: deben cubrir lo exhibido y no superar las existencias totales.');return;}
@@ -5620,7 +5627,7 @@ function stockList008(){const q=stockQuery008.toLocaleLowerCase('es');return P.f
 V.stock=function(){if(stockInnerTab!=='products'){
  const old=stockLegacy008();return old.replace('Movimientos y lotes</button>','Movimientos y lotes</button>');}
  const rows=stockList008().slice((stockPage008-1)*12,stockPage008*12),totalUnits=P.reduce((v,p)=>v+Number(p[3]||0),0),value=P.reduce((v,p)=>v+Number(p[3]||0)*Number(p[9]||0),0),activeLots=proData().lots.length;
- return `<div class="v8-screen"><div class="v8-title"><div><h1>Stock</h1><p>Controlá tus productos, existencias, costos, precios y lotes de inventario.</p></div><div class="v8-title-actions"><button class="btn g sm" onclick="window.openMoveModal()">+ Movimiento</button><button class="btn sm" onclick="window.openProductModal()">+ Nuevo producto</button></div></div><div class="v8-metrics four">${kpi('Productos activos',P.length,'Inventario comercial','sky')}${kpi('Stock crítico',P.filter(crit).length,'Requieren atención','rose')}${kpi('Unidades físicas',totalUnits,`${activeLots} lotes identificados`,'mint')}${kpi('Valorización del inventario',money(value),'Costos de referencia','lilac')}</div><div class="v8-panel"><div class="v8-tabs"><button class="selected" onclick="window.stockTab('products')">Productos y existencias</button><button onclick="window.stockTab('moves')">Movimientos y lotes</button><button onclick="window.stockTab('policies')">Autorizaciones de venta</button></div><div class="v8-filters"><input id="v8StockSearch" type="search" placeholder="Buscar producto, código o categoría…" value="${tx(stockQuery008)}" oninput="v8StockFind(this.value)"><button class="btn g sm" onclick="v8StockFind('')">Limpiar</button></div><div class="v8-overflow"><table class="v8-table"><thead><tr><th>Producto / código</th><th>Categoría</th><th>Proveedor</th><th>Actual</th><th>Mínimo</th><th>Lotes</th><th>Costo final u.</th><th>Precio de venta</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>${rows.map(p=>{const idx=P.indexOf(p),m=productMeta(p),lots=allLotsFor(p);return `<tr><td><div class="v8-prodcell">${tile(p,true)}<span><b>${tx(p[0])}</b><small>${tx(m.code)}</small></span></div></td><td>${tx(p[1])}</td><td>${tx(supById(m.supplierId)?.name||'—')}</td><td><b>${p[3]} u.</b></td><td>${p[4]} u.</td><td><button class="v8-lot-count" onclick="v8Lots('${tx(m.id)}')">${lots.length} lotes ↗</button></td><td>${money(p[9])}</td><td class="v8-money">${money(p[2])}</td><td>${mini(crit(p)?'Stock bajo':m.status!=='enabled'?'Restringido':'Disponible',crit(p)?'danger':m.status!=='enabled'?'warn':'ok')}</td><td><div class="v8-actions">${actionButton('eye',`v8Lots('${tx(m.id)}')`,'Ver lotes')}${actionButton('edit',`window.openProductModal(${idx})`,'Editar producto')}${actionButton('pay',`window.openMoveModal()`,'Registrar movimiento')}</div></td></tr>`}).join('')||'<tr><td colspan="10">Sin resultados.</td></tr>'}</tbody></table></div><div class="v8-pagination"><span>${rows.length} de ${stockList008().length} productos · Cada producto puede registrar múltiples lotes.</span><button class="btn g sm" onclick="v8StockPage(${Math.max(1,stockPage008-1)})" ${stockPage008===1?'disabled':''}>‹</button><b>${stockPage008}</b><button class="btn g sm" onclick="v8StockPage(${stockPage008+1})" ${stockPage008*12>=stockList008().length?'disabled':''}>›</button></div></div></div>`;
+ return `<div class="v8-screen"><div class="v8-title"><div><h1>Stock</h1><p>Controlá tus productos, existencias, costos, precios y lotes de inventario.</p></div><div class="v8-title-actions"><button class="btn g sm" onclick="window.openMoveModal()">+ Movimiento</button><button class="btn g sm" onclick="window.v20OpenNewProductScan()">📷 Alta por código</button><button class="btn sm" onclick="window.openProductModal()">+ Nuevo producto</button></div></div><div class="v8-metrics four">${kpi('Productos activos',P.length,'Inventario comercial','sky')}${kpi('Stock crítico',P.filter(crit).length,'Requieren atención','rose')}${kpi('Unidades físicas',totalUnits,`${activeLots} lotes identificados`,'mint')}${kpi('Valorización del inventario',money(value),'Costos de referencia','lilac')}</div><div class="v8-panel"><div class="v8-tabs"><button class="selected" onclick="window.stockTab('products')">Productos y existencias</button><button onclick="window.stockTab('moves')">Movimientos y lotes</button><button onclick="window.stockTab('policies')">Autorizaciones de venta</button></div><div class="v8-filters"><input id="v8StockSearch" type="search" placeholder="Buscar producto, código o categoría…" value="${tx(stockQuery008)}" oninput="v8StockFind(this.value)"><button class="btn g sm" onclick="v8StockFind('')">Limpiar</button></div><div class="v8-overflow"><table class="v8-table"><thead><tr><th>Producto / código</th><th>Categoría</th><th>Proveedor</th><th>Actual</th><th>Mínimo</th><th>Lotes</th><th>Costo final u.</th><th>Precio de venta</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>${rows.map(p=>{const idx=P.indexOf(p),m=productMeta(p),lots=allLotsFor(p);return `<tr><td><div class="v8-prodcell">${tile(p,true)}<span><b>${tx(p[0])}</b><small>${tx(m.code)}</small></span></div></td><td>${tx(p[1])}</td><td>${tx(supById(m.supplierId)?.name||'—')}</td><td><b>${p[3]} u.</b></td><td>${p[4]} u.</td><td><button class="v8-lot-count" onclick="v8Lots('${tx(m.id)}')">${lots.length} lotes ↗</button></td><td>${money(p[9])}</td><td class="v8-money">${money(p[2])}</td><td>${mini(crit(p)?'Stock bajo':m.status!=='enabled'?'Restringido':'Disponible',crit(p)?'danger':m.status!=='enabled'?'warn':'ok')}</td><td><div class="v8-actions">${actionButton('eye',`v8Lots('${tx(m.id)}')`,'Ver lotes')}${actionButton('edit',`window.openProductModal(${idx})`,'Editar producto')}${actionButton('pay',`window.openMoveModal()`,'Registrar movimiento')}</div></td></tr>`}).join('')||'<tr><td colspan="10">Sin resultados.</td></tr>'}</tbody></table></div><div class="v8-pagination"><span>${rows.length} de ${stockList008().length} productos · Cada producto puede registrar múltiples lotes.</span><button class="btn g sm" onclick="v8StockPage(${Math.max(1,stockPage008-1)})" ${stockPage008===1?'disabled':''}>‹</button><b>${stockPage008}</b><button class="btn g sm" onclick="v8StockPage(${stockPage008+1})" ${stockPage008*12>=stockList008().length?'disabled':''}>›</button></div></div></div>`;
 };
 window.v8StockFind=q=>{stockQuery008=q;stockPage008=1;go('stock');const e=el('v8StockSearch');if(e){e.focus();e.setSelectionRange(q.length,q.length)}};window.v8StockPage=n=>{stockPage008=n;go('stock')};
 window.v8Lots=function(id){const p=P.find(x=>productId(x)===id);if(!p)return;const lots=allLotsFor(p),registered=lots.reduce((n,l)=>n+Number(l.qty||0),0),untracked=Math.max(0,Number(p[3]||0)-registered);
@@ -5862,7 +5869,7 @@ body[data-view=pos] .pos .v20-scanbar .v20-hint{display:none}
  const h=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const $=s=>document.querySelector(s);
  const icon=(name)=>name==='barcode'?'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 5v14M7 5v14M11 5v14M14 5v14M18 5v14M21 5v14"/></svg>':name==='camera'?'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 7h5l2-3h4l2 3h5v13H3z"/><circle cx="12" cy="13.5" r="4"/></svg>':'🔗';
- let channel='pos',stream=null,raf=0,zxingControls=null,scanning=false,freeze=false,lastScan=null,lastAt=0,hotBuffer='',hotAt=0,scanResult='';
+ let channel='pos',stream=null,raf=0,zxingControls=null,scanning=false,freeze=false,lastScan=null,lastAt=0,hotBuffer='',hotAt=0,scanResult='',scanTarget='';
  const allowed=new Set(['pos','stock','supply','gondolas','virtual']);
  const norm=v=>String(v??'').trim().replace(/[\u200b-\u200d\ufeff]/g,'');
  function equivalent(a,b){const x=norm(a),y=norm(b);if(!x||!y)return false;return x===y||(/^\d+$/.test(x)&&/^\d+$/.test(y)&&((x.length===13&&x[0]==='0'&&x.slice(1)===y)||(y.length===13&&y[0]==='0'&&y.slice(1)===x)));}
@@ -5875,7 +5882,7 @@ body[data-view=pos] .pos .v20-scanbar .v20-hint{display:none}
  function emitSound(good){try{if(DB.settings?.sound===false)return;const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;const c=new Audio(),o=c.createOscillator(),g=c.createGain(),t=c.currentTime;o.type='sine';o.frequency.setValueAtTime(good?740:250,t);o.frequency.exponentialRampToValueAtTime(good?1040:180,t+.10);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.025,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+.17);o.connect(g).connect(c.destination);o.start(t);o.stop(t+.18);o.onended=()=>c.close();}catch{}}
  function notify(s){lastScan=s;const spot=$('.v20-scanbar .v20-recent');if(spot)spot.textContent=s;}
  function openDialog(title,inner,buttons){const wrap=$('#v20Overlay');$('#v20Title').textContent=title;$('#v20Content').innerHTML=inner;$('#v20Actions').innerHTML=buttons||'<button type="button" onclick="v20Close()">Cerrar</button>';wrap.hidden=false;wrap.setAttribute('aria-hidden','false');}
- function closeDialog(){const wrap=$('#v20Overlay');if(wrap){wrap.hidden=true;wrap.setAttribute('aria-hidden','true')}stopCamera();}
+ function closeDialog(){const wrap=$('#v20Overlay');if(wrap){wrap.hidden=true;wrap.setAttribute('aria-hidden','true')}stopCamera();scanTarget='';}
  function demoGate(){closeDialog();if(typeof window.v100ShowCommercialGate==='function')window.v100ShowCommercialGate();else if(typeof toast==='function')toast('Esta es una demo. Contactá a Andes Solutions para utilizar esta función.');}
  window.v20Close=closeDialog;
  function createContainers(){if($('#v20Overlay'))return;
@@ -5912,11 +5919,23 @@ body[data-view=pos] .pos .v20-scanbar .v20-hint{display:none}
  window.v20GoStock=id=>{closeDialog();go('stock');if(typeof window.v8Lots==='function')window.v8Lots(id);};
  window.v20StartMove=(id,catalogId='')=>{if(DEMO())return demoGate();const p=P.find(x=>productMeta(x).id===id);if(!p)return;closeDialog();go('stock');if(typeof window.openMoveModal!=='function')return;window.openMoveModal();const s=$('#mvProduct');if(!s)return;s.value=String(P.indexOf(p));const catalog=catalogId?proData().catalog.find(c=>c.id===catalogId):null;if(catalog){const typ=$('#mvPackageType');const val=String(catalog.presentation||'').toLowerCase();if(typ){const opt=[...typ.options].find(o=>o.textContent.toLowerCase()===val);if(opt)typ.value=opt.value;}if($('#mvPerPackage'))$('#mvPerPackage').value=Number(catalog.unitsPerPack)||1;if($('#mvPackPrice'))$('#mvPackPrice').value=Number(catalog.pricePerPack)||0;if($('#mvProvider'))$('#mvProvider').value=supById(catalog.supplierId)?.name||'';if(typeof window.calcMove==='function')window.calcMove('pack');}else if(typeof window.calcMove==='function')window.calcMove('units');};
  window.v20GoSupply=supplierId=>{closeDialog();go('supply');if(typeof window.proCatalog==='function')window.proCatalog(supplierId);};
- function onCode(code,source){const q=norm(code);if(!q)return;if(!/^[A-Za-z0-9._-]{4,80}$/.test(q)){emitSound(false);return bad('Código no compatible','Este lector admite códigos comerciales alfanuméricos (EAN, UPC, Code 128 o SKU). Los códigos QR de pago u otros datos no se procesan como artículos.');}const activeCamera=$('#v20Video')&&$('#v20Overlay')?.hidden===false;const now=Date.now();if(source==='camera'&&q===lastScan&&now-lastAt<1100)return;lastScan=q;lastAt=now;stopCamera();
+ function onCode(code,source){const q=norm(code);if(!q)return;if(!/^[A-Za-z0-9._-]{4,80}$/.test(q)){emitSound(false);return bad('Código no compatible','Este lector admite códigos comerciales alfanuméricos (EAN, UPC, Code 128 o SKU). Los códigos QR de pago u otros datos no se procesan como artículos.');}if(scanTarget==='product-form'||scanTarget==='new-product'){
+   const mode=scanTarget,hit=find(q);
+   const editing=Number.isInteger(editingProductIndex)?P[editingProductIndex]:null;
+   if(mode==='new-product'&&hit?.kind==='unit'&&hit.product){
+    const index=P.indexOf(hit.product);closeDialog();window.openProductModal(index);toast('Este código corresponde a un producto existente.');return;
+   }
+   if(hit&&(hit.kind!=='unit'||hit.product!==editing)){closeDialog();toast('El código ya pertenece a un artículo o presentación.');return;}
+   closeDialog();
+   if(mode==='new-product')window.openProductModal();
+   const field=$('#npBarcode');if(field){field.value=q;field.dispatchEvent(new Event('input',{bubbles:true}));}
+   $('#npName')?.focus();emitSound(true);return;
+  }
+  const activeCamera=$('#v20Video')&&$('#v20Overlay')?.hidden===false;const now=Date.now();if(source==='camera'&&q===lastScan&&now-lastAt<1100)return;lastScan=q;lastAt=now;stopCamera();
   const hit=find(q);if(hit){if(activeCamera && hit.kind==='unit' && channel==='pos')closeDialog();showFound(hit,q,source);return;}
   emitSound(false);
   const msg=`<p>No encontramos ningún producto ni presentación con el código:</p><div class="v20-code">${h(q)}</div><p>Podés vincularlo a un producto existente desde Stock. No se crea un artículo nuevo automáticamente.</p>`;
-  info('Código no registrado',msg,`<button onclick="v20Close()">Cerrar</button>${DEMO()?'':`<button class="v20-main" onclick="v20OpenLink('${h(q)}')">Vincular en Stock</button>`}`);
+  info('Código no registrado',msg,`<button onclick="v20Close()">Cerrar</button>${DEMO()?'':`<button class="v20-main" onclick="v20OpenLink('${h(q)}')">Vincular en Stock</button>${view==='stock'?`<button class="v20-main" onclick="v20CreateFromCode('${h(q)}')">Crear producto</button>`:''}`}`);
  }
  window.v20Code=onCode;
  window.v20Manual=()=>{const i=$('#v20ManualInput'),c=i?.value;if(!c){i?.focus();return}onCode(c,'manual');if(i)i.value='';};
@@ -5965,7 +5984,17 @@ body[data-view=pos] .pos .v20-scanbar .v20-hint{display:none}
  }
  function status(text){const el=$('#v20CameraStatus');if(el)el.textContent=text;}
  window.v20RetryCamera=()=>{stopCamera();startCamera()};
- function openCamera(){closeDialog();openDialog('Escanear con cámara',`<p>Apuntá al código de barras. Al reconocerlo, la cámara se detiene para evitar lecturas duplicadas.</p><div class="v20-camera-wrap"><video id="v20Video" class="v20-video" playsinline autoplay muted></video></div><div class="v20-status" id="v20CameraStatus">Solicitando permiso para usar la cámara…</div><label>También podés escribir o usar el lector USB/BT<input id="v20ManualInput" class="v20-input" autocomplete="off" placeholder="Código de barras o SKU"></label>`, '<button onclick="v20Close()">Cancelar</button><button onclick="v20Manual()">Identificar código</button><button class="v20-main" onclick="v20RetryCamera()">Reiniciar cámara</button>');
+ window.v20ScanForProduct=()=>openCamera('product-form');
+ window.v20OpenNewProductScan=()=>{if(DEMO())return demoGate();openCamera('new-product');};
+ window.v20CreateFromCode=(code)=>{
+  if(DEMO())return demoGate();
+  const key=norm(code);if(!/^[A-Za-z0-9._-]{4,80}$/.test(key))return toast('Código inválido');
+  if(find(key))return toast('Este código ya está asociado.');
+  closeDialog();window.openProductModal();
+  const field=$('#npBarcode');if(field)field.value=key;
+  $('#npName')?.focus();
+ };
+ function openCamera(target=''){closeDialog();scanTarget=target;openDialog('Escanear con cámara',`<p>Apuntá al código de barras. Al reconocerlo, la cámara se detiene para evitar lecturas duplicadas.</p><div class="v20-camera-wrap"><video id="v20Video" class="v20-video" playsinline autoplay muted></video></div><div class="v20-status" id="v20CameraStatus">Solicitando permiso para usar la cámara…</div><label>También podés escribir o usar el lector USB/BT<input id="v20ManualInput" class="v20-input" autocomplete="off" placeholder="Código de barras o SKU"></label>`, '<button onclick="v20Close()">Cancelar</button><button onclick="v20Manual()">Identificar código</button><button class="v20-main" onclick="v20RetryCamera()">Reiniciar cámara</button>');
   $('#v20ManualInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();v20Manual()}});startCamera();
  }
  async function startCamera(){stopCamera();const video=$('#v20Video');if(!video)return;
