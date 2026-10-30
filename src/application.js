@@ -56,6 +56,7 @@ export async function mountApplication(profile) {
     profile,
     products: [],
     barcodes: [],
+    barcodeEnabled: false,
     sales: [],
     payments: [],
     movements: [],
@@ -148,7 +149,22 @@ export async function mountApplication(profile) {
     );
     fetch("payments", "payments", ["payments", "dashboard"].some(can));
     fetch("movements", "stock_movements", ["stock", "dashboard"].some(can));
-    fetch("barcodes", "product_barcodes", ["products", "stock", "pos", "catalog", "dashboard"].some(can));
+    // Older deployments may not have the barcode migration yet.
+    // Preserve all existing business operations until the backend is ready.
+    if (["products", "stock", "pos", "catalog", "dashboard"].some(can)) {
+      jobs.push(
+        query("product_barcodes")
+          .then((rows) => {
+            s.barcodes = rows;
+            s.barcodeEnabled = true;
+          })
+          .catch((error) => {
+            s.barcodes = [];
+            s.barcodeEnabled = false;
+            console.warn("Módulo de códigos de barras no disponible:", error.message);
+          }),
+      );
+    }
     fetch("deliveries", "deliveries", ["deliveries", "dashboard"].some(can));
     fetch("profiles", "profiles", true);
     fetch("invitations", "user_invitations", can("users"));
