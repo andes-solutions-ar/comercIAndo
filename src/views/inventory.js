@@ -85,7 +85,7 @@ export function stockView(s) {
     head(
       "Stock Pro",
       "Control profesional de existencias, reservas y movimientos.",
-      `${canCreate ? button("+ Agregar producto", "new-product") + button("Escanear código", "scan-stock-barcode", "", "g") : ""}${button("+ Registrar movimiento", "new-move")}`,
+      `${canCreate ? button("+ Agregar producto", "new-product") + (s.barcodeEnabled ? button("Escanear código", "scan-stock-barcode", "", "g") : "") : ""}${button("+ Registrar movimiento", "new-move")}`,
     ) +
     kpis([
       ["Productos controlados", controlled.length],
@@ -129,7 +129,7 @@ export function productDialog(s, refresh, id, scannedCode = "") {
   const p = s.products.find((p) => p.id === id);
   modal(
     p ? "Editar producto" : "Nuevo producto",
-    `<div class="form-stack">${input("Nombre", "name", p?.name || "", "text", 'required maxlength="160"')}${input("Categoría", "category", p?.category || "General", "text", 'required maxlength="100"')}${input("Código de barras", "barcode", scannedCode || p?.barcode || "", "text", 'maxlength="80" autocomplete="off" placeholder="Escribí, escaneá o usá un lector USB"')}<div class="barcode-tools"><button type="button" class="btn g sm" id="scanProductBarcode">Escanear con cámara</button><small id="barcodeHint">Un código único por producto.</small><div class="barcode-preview" id="productBarcodePreview" hidden></div></div>${input("Precio ($)", "price", p?.price ?? 0, "number", 'required min="0" step="0.01"')}${input("Tono / Hue (0–360)", "visual_hue", p?.visual_hue ?? 210, "number", 'required min="0" max="360"')}${input("Stock mínimo", "minimum_stock", p?.minimum_stock ?? 0, "number", 'required min="0" step="1"')}${p ? "" : input("Stock inicial", "stock_quantity", 0, "number", 'required min="0" step="1"')}${select(
+    `<div class="form-stack">${input("Nombre", "name", p?.name || "", "text", 'required maxlength="160"')}${input("Categoría", "category", p?.category || "General", "text", 'required maxlength="100"')}${s.barcodeEnabled ? `${input("Código de barras", "barcode", scannedCode || p?.barcode || "", "text", 'maxlength="80" autocomplete="off" placeholder="Escribí, escaneá o usá un lector USB"')}<div class="barcode-tools"><button type="button" class="btn g sm" id="scanProductBarcode">Escanear con cámara</button><small id="barcodeHint">Un código único por producto.</small><div class="barcode-preview" id="productBarcodePreview" hidden></div></div>` : ""}${input("Precio ($)", "price", p?.price ?? 0, "number", 'required min="0" step="0.01"')}${input("Tono / Hue (0–360)", "visual_hue", p?.visual_hue ?? 210, "number", 'required min="0" max="360"')}${input("Stock mínimo", "minimum_stock", p?.minimum_stock ?? 0, "number", 'required min="0" step="1"')}${p ? "" : input("Stock inicial", "stock_quantity", 0, "number", 'required min="0" step="1"')}${select(
       "Tipo",
       "item_type",
       [
@@ -140,17 +140,18 @@ export function productDialog(s, refresh, id, scannedCode = "") {
     )}${p ? "" : check("Controlar stock", "track_stock", true)}${check("Activo", "active", p?.active ?? true)}${check("Publicado en catálogo", "published", p?.published ?? false)}</div>${p ? "<p>Las existencias se modifican desde Stock Pro para conservar su trazabilidad.</p>" : ""}`,
     async (data) => {
       const fields = formValues(data);
-      fields.barcode = normalizeBarcode(fields.barcode);
+      if (s.barcodeEnabled) fields.barcode = normalizeBarcode(fields.barcode);
       fields.active = data.has("active");
       fields.published = data.has("published");
       if (p) fields.id = p.id;
       else fields.track_stock = data.has("track_stock");
-      await rpc("save_product_with_barcode", { payload: fields });
+      await rpc(s.barcodeEnabled ? "save_product_with_barcode" : "save_product", { payload: fields });
       await refresh();
-      toast("Producto guardado con su código de barras");
+      toast(s.barcodeEnabled ? "Producto guardado con su código de barras" : "Producto guardado");
     },
     true,
   );
+  if (!s.barcodeEnabled) return;
   const field = document.querySelector('#modalRoot [name="barcode"]');
   field.closest("label")?.classList.add("full");
   field.addEventListener("keydown", (event) => { if (event.key === "Enter") event.preventDefault(); });
