@@ -1,1 +1,6 @@
-{ "rewrites": [{ "source": "/catalogo", "destination": "/index.html" }] }
+{
+  "rewrites": [
+    { "source": "/catalogo", "destination": "/panel/index.html" },
+    { "source": "/panel", "destination": "/panel/index.html" }
+  ]
+}

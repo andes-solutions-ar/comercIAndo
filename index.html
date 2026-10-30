@@ -1,26 +1,3 @@
-<!doctype html>
-<html lang="es" data-theme="light">
-  <head>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width,initial-scale=1,viewport-fit=cover"
-    />
-    <title>comercIAndo Premium — Suite Comercial</title>
-    <link rel="icon" href="/favicon.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
-      rel="stylesheet"
-    />
-  </head>
-  <body>
-    <div id="app">
-      <div class="auth-screen" role="status">Verificando sesión…</div>
-    </div>
-    <div id="modalRoot"></div>
-    <div class="toast" id="toast" role="status"></div>
-    <script type="module" src="/src/main.js"></script>
-  </body>
-</html>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#08142a"><title>comercIAndo · Remake v2.0 | Andes Solutions</title><style>
+:root{color-scheme:dark;font:15px/1.55 system-ui,'Segoe UI',sans-serif;color:#f1f5ff;background:#081326}*{box-sizing:border-box}body{margin:0;min-height:100dvh;background:radial-gradient(circle at 80% -10%,#143b84 0%,transparent 42%),linear-gradient(145deg,#08142b,#0a1933 60%,#050e20)}a{color:inherit;text-decoration:none}.page{max-width:1150px;margin:0 auto;padding:36px 26px 80px}.brand{display:flex;align-items:center;gap:13px;font-size:20px;font-weight:900}.logo{width:47px;height:47px;background:#315bf4;border-radius:13px;display:grid;place-items:center;box-shadow:0 8px 30px #174fe068}.brand small{display:block;color:#9eb7dc;font-size:11px;font-weight:500}.eyebrow{margin:65px 0 7px;color:#96b5ff;font-size:12px;font-weight:850;letter-spacing:2.1px;text-transform:uppercase}h1{font-size:clamp(35px,5.5vw,60px);line-height:1.05;letter-spacing:-2.5px;margin:0;max-width:760px}.lead{font-size:16px;color:#bdd0ee;max-width:755px;line-height:1.7;margin:22px 0 35px}.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}.card{background:#13233c;border:1px solid #304769;border-radius:19px;min-height:282px;padding:23px;display:flex;flex-direction:column;gap:10px;box-shadow:0 12px 30px #0002}.card.highlight{background:linear-gradient(150deg,#17365f,#10264a);border-color:#4575e3}.card .icon{width:52px;height:52px;border-radius:15px;background:#1f3d71;display:grid;place-items:center;font-size:25px;color:#bdd4ff}.tag{color:#91b4ff;text-transform:uppercase;letter-spacing:1.1px;font-weight:850;font-size:10px}.card h2{font-size:21px;margin:2px 0 0;letter-spacing:-.6px}.card p{font-size:13px;color:#b3c6e1;line-height:1.65;margin:0;flex:1}.btn{display:block;text-align:center;border-radius:11px;background:#315bf4;padding:12px;font-weight:800;font-size:13px;transition:filter .15s,transform .15s}.btn:hover{filter:brightness(1.15);transform:translateY(-2px)}.card.demo .btn{background:#1b427e;border:1px solid #4977c9}.note{border:1px solid #705d3e;background:#2f291e;padding:18px 20px;border-radius:14px;color:#f6dca9;font-size:13px;line-height:1.65;margin:27px 0 0}.bottom{color:#8fa4c6;font-size:12px;margin-top:35px;border-top:1px solid #32445f;padding-top:22px}@media(max-width:840px){.cards{grid-template-columns:1fr}.card{min-height:0}.page{padding:26px 18px}.eyebrow{margin-top:45px}}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head><body><main class="page"><header class="brand"><span class="logo">▵</span><span>comercIAndo<small>by Andes Solutions</small></span></header><div class="eyebrow">Remake · Versión 2.0</div><h1>Tu negocio, conectado.</h1><p class="lead">Plataforma administrativa Executive Navy, tienda multirubro y demo comercial restringida. Ahora con lector de códigos por USB/Bluetooth, cámara y <strong>escáner móvil vinculado mediante QR temporal</strong>.</p><div class="cards"><section class="card"><div class="icon">▣</div><div class="tag">Interno · Desarrollo</div><h2>Administración</h2><p>POS, gestión de ventas, inventario, lotes, góndolas, proveedores y escáner móvil. Abrí Punto de Venta y tocá «Vincular celular».</p><a class="btn" href="administracion/index.html">Abrir administración</a></section><section class="card"><div class="icon">▤</div><div class="tag">Catálogo digital</div><h2>Tienda multirubro</h2><p>Exploración de productos y carrito de prueba. Conserva la tienda de la base v2.0, separada de las operaciones administrativas reales.</p><a class="btn" href="tienda/index.html">Abrir tienda</a></section><section class="card highlight demo"><div class="icon">♧</div><div class="tag">Para potenciales clientes</div><h2>Demo restringida</h2><p>Recorrido con información ficticia. No permite altas de productos, modificaciones de stock, cobros ni confirmación de pedidos.</p><a class="btn" href="demo/index.html">Explorar demo comercial</a></section></div><div class="note"><strong>Cómo conectar el celular:</strong> es necesario publicar esta carpeta completa en un dominio HTTPS, conservar el acceso a Internet en ambos equipos y permitir la cámara. El archivo local abierto con doble clic permite explorar las pantallas, pero <strong>no genera un enlace móvil utilizable entre dos equipos</strong>. Seguí la guía de instalación incluida.</div><footer class="bottom">comercIAndo · Prototipo de demostración · Andes Solutions · No utilizar con ventas reales ni información personal de clientes.</footer></main><script type="module" src="/src/remake-entry.js"></script></body></html>

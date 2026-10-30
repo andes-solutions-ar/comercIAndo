@@ -1,3 +1,14 @@
+> **Publicación actual: Remake v2.0.** La portada `/` y las rutas
+> `/administracion/`, `/tienda/`, `/demo/`, `/demo/admin/` y `/demo/tienda/`
+> corresponden al paquete HTML suministrado. Su administración y tienda usan
+> almacenamiento local y no están conectadas al backend anterior. La demo conserva
+> sus restricciones. El escáner móvil utiliza PeerJS y requiere HTTPS e Internet.
+> Guía original: [LEEME_PRIMERO.md](public/LEEME_PRIMERO.md).
+>
+> El panel autenticado anterior se conserva en `/panel/`, y su catálogo en
+> `/catalogo`. Los enlaces de invitación/recuperación emitidos para `/` se derivan
+> al panel conservando sus parámetros. Supabase, sus datos y sus permisos no se
+> modifican en esta publicación. Las secciones siguientes documentan ese panel.
 # ComercIAndo
 
 Base tecnológica generalista de Andes Solutions para digitalización, venta y gestión comercial de emprendedores, profesionales, comercios y pequeñas/medianas empresas.
