@@ -8,6 +8,7 @@ import {
   productsView,
   stockView,
   productDialog,
+  scanStockBarcodeDialog,
   moveDialog,
 } from "./views/inventory.js";
 import { toast, modal } from "./components/ui.js";
@@ -54,6 +55,7 @@ export async function mountApplication(profile) {
   const s = {
     profile,
     products: [],
+    barcodes: [],
     sales: [],
     payments: [],
     movements: [],
@@ -146,6 +148,7 @@ export async function mountApplication(profile) {
     );
     fetch("payments", "payments", ["payments", "dashboard"].some(can));
     fetch("movements", "stock_movements", ["stock", "dashboard"].some(can));
+    fetch("barcodes", "product_barcodes", ["products", "stock", "pos", "catalog", "dashboard"].some(can));
     fetch("deliveries", "deliveries", ["deliveries", "dashboard"].some(can));
     fetch("profiles", "profiles", true);
     fetch("invitations", "user_invitations", can("users"));
@@ -157,6 +160,7 @@ export async function mountApplication(profile) {
       const inventory = await rpc("inventory");
       s.products = s.products.map((p) => ({
         ...p,
+        barcode: s.barcodes.find((b) => b.product_id === p.id && b.is_primary)?.code || "",
         ...inventory.find((i) => i.product_id === p.id),
       }));
     }
@@ -199,8 +203,10 @@ export async function mountApplication(profile) {
         await supabase.auth.signOut();
         return;
       }
-      if (action.dataset.action === "new-product") productDialog(s, refresh);
-      else if (action.dataset.action === "edit-product")
+      if (action.dataset.action === "new-product" && can("products")) productDialog(s, refresh);
+      else if (action.dataset.action === "scan-stock-barcode" && can("products"))
+        scanStockBarcodeDialog(s, refresh);
+      else if (action.dataset.action === "edit-product" && can("products"))
         productDialog(s, refresh, action.dataset.id);
       else if (action.dataset.action === "new-move") moveDialog(s, refresh);
       else if (action.dataset.action === "go-pos" && can("pos")) {
