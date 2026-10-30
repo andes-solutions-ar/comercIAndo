@@ -52,7 +52,7 @@ export function installPlatformSound() {
   document.addEventListener("click", (event) => {
     if (!event.isTrusted || !(event.target instanceof Element)) return;
     const control = event.target.closest(
-      'button, a[href], input[type="button"], input[type="submit"], input[type="checkbox"], input[type="radio"], [role="button"], .switch-toggle'
+      'button, a[href], input[type="button"], input[type="submit"], input[type="checkbox"], input[type="radio"], [role="button"], [onclick], .switch-toggle'
     );
     if (!control || control.disabled || control.getAttribute("aria-disabled") === "true") return;
     if (control.closest("[inert]")) return;
