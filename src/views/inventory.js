@@ -147,10 +147,13 @@ export function productDialog(s, refresh, id, scannedCode = "") {
       else fields.track_stock = data.has("track_stock");
       await rpc("save_product_with_barcode", { payload: fields });
       await refresh();
-      toast("Producto guardado");
+      toast("Producto guardado con su código de barras");
     },
+    true,
   );
   const field = document.querySelector('#modalRoot [name="barcode"]');
+  field.closest("label")?.classList.add("full");
+  field.addEventListener("keydown", (event) => { if (event.key === "Enter") event.preventDefault(); });
   const hint = document.querySelector("#barcodeHint");
   const validateBarcode = () => {
     let message = "";
@@ -190,7 +193,7 @@ export function scanStockBarcodeDialog(s, refresh) {
       if (!code) throw new Error("Ingresá o escaneá un código");
       const product = findBarcodeProduct(s.products, s.barcodes || [], code);
       closeModal();
-      productDialog(s, refresh, product?.id || null, code);
+      productDialog(s, refresh, product?.id || null, product ? "" : code);
     } catch (error) { document.querySelector("#dialogError").textContent = error.message; }
   };
   field.addEventListener("keydown", (event) => {
