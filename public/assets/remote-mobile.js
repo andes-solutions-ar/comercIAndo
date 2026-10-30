@@ -3,7 +3,7 @@
  const $=s=>document.querySelector(s), params=new URLSearchParams(location.search);
  const PC=params.get('pc')||'', token=params.get('token')||'', expires=Number(params.get('exp')||0), DEMO=params.get('demo')==='1';
  let peer=null,conn=null,approved=false,stream=null,readerControls=null,loop=0,detector=null,reading=false,inFlight=false,shownResult=false,torchOn=false,keepManual=false;
- let soundEnabled=true,deadline=0,pendingId='',lastCode='',lastTs=0;const history=[];
+ let soundEnabled=true,deadline=0,pendingId='',lastCode='',lastTs=0,purpose='pos';const history=[];
  const status=(text,online=false)=>{$('#state').textContent=text;$('#badge').className='badge'+(online?' online':'');$('#badge').textContent=online?'● Vinculado':'◌ Esperando conexión';};
  const note=(msg)=>{$('#feedback').textContent=msg};
  const safeSend=d=>{try{if(conn?.open)conn.send(d)}catch{}};
@@ -15,7 +15,7 @@
  function showResult(m){if(m.requestId!==pendingId)return;clearTimeout(deadline);pendingId='';inFlight=false;shownResult=true;const ok=m.status==='ok'||m.status==='demo',warn=m.status==='warning';$('#result').className='result visible '+(ok?'ok':warn?'warning':'error');$('#resIcon').textContent=ok?'✓':warn?'!':'×';$('#resName').textContent=m.name||'Producto no reconocido';$('#resNote').textContent=m.message||'';$('#resPrice').textContent=Number.isFinite(m.price)&&m.price>0?new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0}).format(m.price):'';sound(ok);history.unshift({text:m.name||'Código: '+lastCode,kind:m.status,time:new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})});history.splice(8);$('#recent').innerHTML=history.map(x=>`<div><span>${esc(x.text)}</span><small>${esc(x.time)}</small></div>`).join('');note('Podés tocar «Escanear siguiente» para continuar.');$('#again').disabled=!approved;setButtons();}
  function sendCode(raw){const code=String(raw||'').trim().replace(/[\u200b-\u200d\ufeff]/g,'');if(!approved||!conn?.open)return fail('No se estableció la vinculación con la PC.');if(inFlight)return;
   if(!/^[a-zA-Z0-9._-]{4,80}$/.test(code))return fail('Código inválido. Utilizá EAN, UPC, Code 128 o SKU.');const now=Date.now();if(lastCode===code&&now-lastTs<900)return;lastCode=code;lastTs=now;
-  inFlight=true;stopCamera();$('#result').className='result';note('Enviando el código al Punto de Venta…');pendingId=Math.random().toString(36).slice(2)+Date.now().toString(36);safeSend({type:'scan',code,token,requestId:pendingId});deadline=setTimeout(()=>{if(inFlight){inFlight=false;pendingId='';fail('La PC no respondió. Revisá que Punto de Venta esté abierto.');setButtons();}},12000);setButtons();}
+  inFlight=true;stopCamera();$('#result').className='result';note(purpose==='product'?'Enviando el código al formulario Nuevo producto…':'Enviando el código al Punto de Venta…');pendingId=Math.random().toString(36).slice(2)+Date.now().toString(36);safeSend({type:'scan',code,token,requestId:pendingId});deadline=setTimeout(()=>{if(inFlight){inFlight=false;pendingId='';fail(purpose==='product'?'La PC no respondió. Revisá el formulario Nuevo producto.':'La PC no respondió. Revisá que Punto de Venta esté abierto.');setButtons();}},12000);setButtons();}
  async function loadZXing(){if(window.ZXingBrowser?.BrowserMultiFormatReader)return window.ZXingBrowser;return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@zxing/browser@0.2.1/umd/zxing-browser.min.js';s.onload=()=>window.ZXingBrowser?resolve(window.ZXingBrowser):reject(new Error('Biblioteca incompatible'));s.onerror=()=>reject(new Error('Biblioteca no accesible'));document.head.appendChild(s)});}
  async function startCamera(){if(reading||!approved)return;if(!navigator.mediaDevices?.getUserMedia)return fail('La cámara necesita HTTPS y permisos del navegador. Podés introducir el código manualmente.');reading=true;shownResult=false;$('#result').className='result';$('#cameraText').textContent='Solicitando permiso de cámara…';$('#camera').setAttribute('aria-busy','true');setButtons();
   const video=$('#video');try{
@@ -25,7 +25,19 @@
  function finish(){safeSend({type:'bye'});close();}
  function close(){stopCamera();try{conn?.close()}catch{}try{peer?.destroy()}catch{}peer=null;conn=null;approved=false;status('Sesión finalizada. Cerrá esta pestaña.',false);setButtons();}
  function fromPC(m){if(!m||typeof m!=='object')return;
-  if(m.type==='approved'){approved=true;status('Conectado a la caja · listo para escanear',true);$('#step').textContent='Conectado · Punto de venta';note(DEMO?'Modo demostración: las lecturas no modifican ventas.':'Cada código se enviará a la PC para validar y sumar unidades.');setButtons();return;}
+  if(m.type==='approved'){
+   approved=true;purpose=m.purpose==='product'?'product':'pos';
+   status(purpose==='product'?'Vinculado al alta de productos · listo para escanear':'Conectado a la caja · listo para escanear',true);
+   $('#step').textContent=purpose==='product'?'Escanear código para Nuevo producto':'Conectado · Punto de venta';
+   const lead=document.querySelector('.lead');
+   if(lead)lead.textContent=purpose==='product'
+     ? 'Escaneá el producto con tu celular. El código se completará en la computadora; los datos se guardan únicamente desde allí.'
+     : 'Tu celular como lector inalámbrico para el Punto de Venta de comercIAndo.';
+   note(DEMO?'Modo demostración: las lecturas no modifican ventas.':purpose==='product'
+     ? 'Cada lectura completará el código de barras en el formulario de la PC, sin registrar movimientos de stock.'
+     : 'Cada código se enviará a la PC para validar y sumar unidades.');
+   setButtons();return;
+  }
   if(m.type==='rejected'){close();fail(m.message||'La PC rechazó la vinculación.');return;}
   if(m.type==='result'){showResult(m);return;}
  }
