@@ -33,7 +33,9 @@ export async function edge(name, body) {
     try {
       message = (await error.context.json()).error || message;
     } catch {}
-    throw new Error(message);
+    const failure = new Error(message);
+    failure.uncertain = !error.context || error.context.status >= 500;
+    throw failure;
   }
   return data;
 }

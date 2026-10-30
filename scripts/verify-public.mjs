@@ -40,13 +40,45 @@ for (const table of [
   "sales",
   "payments",
   "app_settings",
+  "remake_state",
+  "remake_events",
+  "remake_web_orders",
 ]) {
-  const r = await fetch(url + "/rest/v1/" + table + "?select=id&limit=1", {
+  const r = await fetch(url + "/rest/v1/" + table + "?select=*&limit=0", {
     headers: { apikey: key },
   });
   console.log(JSON.stringify({ table, status: r.status }));
   if (r.ok) process.exitCode = 1;
 }
+const publicRemake = await fetch(url + "/rest/v1/rpc/remake_catalog", {
+  method: "POST",
+  headers: { apikey: key, "Content-Type": "application/json" },
+  body: "{}",
+});
+const publicMenu = await publicRemake.json();
+console.log(
+  JSON.stringify({
+    remakeCatalogStatus: publicRemake.status,
+    productCount: publicMenu.products?.length,
+    storeOpen: publicMenu.settings?.storeOpen,
+  }),
+);
+if (
+  !publicRemake.ok ||
+  publicMenu.customers ||
+  publicMenu.sales ||
+  publicMenu.state
+)
+  process.exitCode = 1;
+const privateRemake = await fetch(url + "/rest/v1/rpc/remake_load", {
+  method: "POST",
+  headers: { apikey: key, "Content-Type": "application/json" },
+  body: "{}",
+});
+console.log(
+  JSON.stringify({ remakeAnonymousLoadStatus: privateRemake.status }),
+);
+if (privateRemake.ok) process.exitCode = 1;
 const admin = await fetch(url + "/rest/v1/rpc/finish_invitation", {
   method: "POST",
   headers: { apikey: key, "Content-Type": "application/json" },
@@ -58,7 +90,7 @@ const admin = await fetch(url + "/rest/v1/rpc/finish_invitation", {
 console.log(JSON.stringify({ privilegedRpcAnonymousStatus: admin.status }));
 if (admin.ok) process.exitCode = 1;
 for (const fn of process.env.APP_ORIGIN
-  ? ["admin-invite-user", "create-web-order"]
+  ? ["admin-invite-user", "remake-store"]
   : []) {
   const r = await fetch(url + "/functions/v1/" + fn, {
     method: "POST",

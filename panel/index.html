@@ -1,26 +1,13 @@
 <!doctype html>
-<html lang="es" data-theme="light">
+<html lang="es">
   <head>
     <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width,initial-scale=1,viewport-fit=cover"
-    />
-    <title>comercIAndo Premium — Suite Comercial</title>
-    <link rel="icon" href="/favicon.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
-      rel="stylesheet"
-    />
+    <title>ComercIAndo</title>
   </head>
   <body>
-    <div id="app">
-      <div class="auth-screen" role="status">Verificando sesión…</div>
-    </div>
-    <div id="modalRoot"></div>
-    <div class="toast" id="toast" role="status"></div>
-    <script type="module" src="/src/main.js"></script>
+    <a href="/administracion/">Abrir administración</a>
+    <script>
+      location.replace("/administracion/" + location.search + location.hash);
+    </script>
   </body>
 </html>

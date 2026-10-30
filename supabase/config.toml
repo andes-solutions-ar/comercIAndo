@@ -4,3 +4,6 @@ verify_jwt = false
 [functions.create-web-order]
 verify_jwt = false
 
+
+[functions.remake-store]
+verify_jwt = false

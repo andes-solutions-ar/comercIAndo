@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>ComercIAndo · Administración</title>
+    <link rel="icon" href="/favicon.svg" />
+    <style>
+      body {
+        margin: 0;
+        font: 15px system-ui;
+        background: #081326;
+        color: #edf3ff;
+      }
+      .auth-screen {
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+      }
+      .auth-card {
+        background: #12223b;
+        padding: 32px;
+        border: 1px solid #304363;
+        border-radius: 20px;
+        width: min(360px, calc(100vw - 80px));
+      }
+      .auth-card .brand {
+        color: #aac0ff;
+      }
+      .auth-card label {
+        display: block;
+        margin: 18px 0 8px;
+      }
+      .auth-card input {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 12px;
+        margin-top: 6px;
+        background: #081326;
+        border: 1px solid #496080;
+        border-radius: 8px;
+        color: white;
+      }
+      .auth-card button {
+        padding: 12px;
+        border: 0;
+        border-radius: 8px;
+        background: #315bf4;
+        color: white;
+        cursor: pointer;
+        margin-top: 12px;
+      }
+      .auth-card #authError {
+        color: #ffbaad;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"><div class="auth-screen">Verificando acceso…</div></div>
+    <div id="modalRoot"></div>
+    <script type="module" src="/src/remake/admin-entry.js"></script>
+  </body>
+</html>

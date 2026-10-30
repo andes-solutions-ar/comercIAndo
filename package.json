@@ -8,13 +8,16 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node --test"
+    "test": "node --test",
+    "prebuild": "node scripts/build-remake.mjs",
+    "predev": "node scripts/build-remake.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.57.4"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.8",
+    "rollup": "4.64.5",
     "vite": "^7.1.7"
   }
 }

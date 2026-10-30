@@ -1,14 +1,62 @@
-> **Publicación actual: Remake v2.0.** La portada `/` y las rutas
-> `/administracion/`, `/tienda/`, `/demo/`, `/demo/admin/` y `/demo/tienda/`
-> corresponden al paquete HTML suministrado. Su administración y tienda usan
-> almacenamiento local y no están conectadas al backend anterior. La demo conserva
-> sus restricciones. El escáner móvil utiliza PeerJS y requiere HTTPS e Internet.
-> Guía original: [LEEME_PRIMERO.md](public/LEEME_PRIMERO.md).
->
-> El panel autenticado anterior se conserva en `/panel/`, y su catálogo en
-> `/catalogo`. Los enlaces de invitación/recuperación emitidos para `/` se derivan
-> al panel conservando sus parámetros. Supabase, sus datos y sus permisos no se
-> modifican en esta publicación. Las secciones siguientes documentan ese panel.
+# ComercIAndo Remake — backend propio
+
+La aplicación operativa está en /administracion/ y la tienda conectada en /tienda/.
+/panel/ deriva a la administración actual; /catalogo deriva a la tienda.
+/demo/ conserva el prototipo restringido y sus datos ficticios, separado del backend.
+
+## Configuración
+
+VITE_SUPABASE_URL y VITE_SUPABASE_PUBLISHABLE_KEY se configuran mediante variables
+locales ignoradas y en Vercel (Production, Preview, Development). No hay claves de
+servidor en el cliente. El proyecto nuevo pertenece a la cuenta de Supabase elegida
+por el propietario, es independiente de Malvi’s y no reutiliza el backend anterior.
+Auth requiere perfil activo; las altas son por invitación. Se conservan tres cupos
+para administradores y el superadministrador no ocupa cupo. En esta primera versión
+operativa del remake los administradores requieren acceso completo: los permisos
+parciales no habilitan el documento del negocio.
+
+## Persistencia del remake
+
+La migración remake_backend agrega un documento JSONB versionado por instancia en
+PostgreSQL, eventos de guardado con actor real y pedidos web privados. Los esquemas
+normalizados anteriores se conservan como base histórica, pero la interfaz del
+remake usa exclusivamente remake_load, remake_commit y remake_catalog; no escribe
+operaciones en dos modelos a la vez. Las escrituras directas están revocadas y las
+tablas tienen RLS. Esta adaptación conserva el modelo del frontend suministrado;
+no es una migración completa a entidades normalizadas de todas sus extensiones.
+
+Los guardados se serializan con bloqueo de fila y control de versión. Un conflicto
+recarga el estado y exige revisar la operación. Un UUID permite recuperar un
+reintento sin duplicarlo. Los comprobantes se abren después de confirmar el guardado.
+El servidor valida cantidades, precios controlados, totales, descuentos, stock,
+históricos inmutables, reservas y entrega pagada. Los precios de POS de artículos
+sin control comercial permiten la edición manual prevista por el diseño original.
+No se importan automáticamente datos del localStorage ni los ejemplos de la demo.
+
+La tienda recibe el catálogo público filtrado del servidor. Los pedidos y su
+seguimiento pasan por la función remake-store, con validación y límite de solicitudes.
+Cada pedido tiene un token privado UUID para seguimiento, distinto del código de
+entrega. Reserva existencias y cupo; una entrega confirmada consume la reserva una
+sola vez. Los cobros son registros manuales; no se conectó ninguna pasarela.
+
+## Operación y límites
+
+La tienda comienza sin productos y sin recibir pedidos. El administrador puede
+cargar productos, asignar cupo online en Stock/Catálogo virtual y habilitar pedidos
+en Configuración → Tienda conectada. Actualizar datos vuelve a consultar el servidor;
+los cambios de otras sesiones se revalidan al guardar, sin sincronización visual en
+segundo plano. El documento tiene un límite de 8 MB, incluidos adjuntos; para crecer
+se deben normalizar entidades y trasladar archivos a Storage. Los tickets JPG pueden
+mantener caché local, y el carrito público conserva su borrador en el dispositivo.
+
+npm run build prepara el frontend original con un adaptador de autenticación y
+persistencia asíncrona antes de compilar Vite. npm test verifica SQL real en PGlite.
+La fixture tests/fixtures/remake.html usa un backend simulado sólo para revisar UI
+en desarrollo; no se incluye en dist. No reemplaza la prueba de login y guardado
+productivos con una cuenta real, ni la prueba de cámara/USB/WebRTC físico.
+
+## Documentación de la implementación anterior
+
 # ComercIAndo
 
 Base tecnológica generalista de Andes Solutions para digitalización, venta y gestión comercial de emprendedores, profesionales, comercios y pequeñas/medianas empresas.
@@ -18,6 +66,7 @@ Base tecnológica generalista de Andes Solutions para digitalización, venta y g
 ## Productos comerciales
 
 ### START — USD 100/mes
+
 - Página base, tienda o catálogo digital.
 - Panel administrativo.
 - Gestión de productos o servicios e imágenes.
@@ -26,12 +75,15 @@ Base tecnológica generalista de Andes Solutions para digitalización, venta y g
 - 1 usuario administrativo.
 
 ### COMMERCE — USD 150/mes
+
 Incluye START y agrega:
+
 - Pasarela de pagos.
 - Hasta 3 usuarios administrativos.
 - Mantiene Stock Básico.
 
 ### PREMIUM — USD 250/mes
+
 - Página base, tienda o catálogo.
 - Panel administrativo.
 - Productos o servicios.
