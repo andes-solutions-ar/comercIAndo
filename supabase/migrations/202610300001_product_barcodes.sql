@@ -29,7 +29,7 @@ create policy barcode_read on public.product_barcodes for select
 create function public.save_product_with_barcode(payload jsonb)
 returns uuid language plpgsql security definer set search_path = '' as $$
 declare
-  product_id uuid;
+  v_product_id uuid;
   code_value text;
   old_code text;
 begin
@@ -42,25 +42,25 @@ begin
   end if;
 
   perform pg_advisory_xact_lock(741125);
-  product_id := public.save_product(payload - 'barcode');
+  v_product_id := public.save_product(payload - 'barcode');
 
   select b.code into old_code from public.product_barcodes b
-    where b.product_id = product_id and b.is_primary for update;
+    where b.product_id = v_product_id and b.is_primary for update;
 
   if old_code is distinct from code_value then
     delete from public.product_barcodes
-      where public.product_barcodes.product_id = product_id and is_primary;
+      where public.product_barcodes.product_id = v_product_id and is_primary;
     if code_value is not null then
       if exists(select 1 from public.product_barcodes b
-                where b.code = code_value and b.product_id <> product_id) then
+                where b.code = code_value and b.product_id <> v_product_id) then
         raise exception 'Este código ya está asociado a otro producto';
       end if;
       insert into public.product_barcodes(product_id,code,is_primary)
-        values(product_id,code_value,true);
+        values(v_product_id,code_value,true);
     end if;
   end if;
 
-  return product_id;
+  return v_product_id;
 end $$;
 -- Asegurar que no se exponga por los grants por defecto.
 revoke all on function public.save_product_with_barcode(jsonb) from public,anon,authenticated;
