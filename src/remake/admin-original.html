@@ -2652,31 +2652,8 @@ function getFilteredOrders(stage) {
   return DB.orderFlow.filter(order => order.stage === stage && matchesOrderFilters(order));
 }
 
-// BEEP SINTETIZADO (Web Audio API)
-function beep(type = 'click') {
-  if (!DB.settings?.sound) return;
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    if (type === 'success') {
-      osc.frequency.setValueAtTime(523.25, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(783.99, ctx.currentTime + 0.12);
-      gain.gain.setValueAtTime(0.08, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.16);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.16);
-    } else {
-      osc.frequency.setValueAtTime(440, ctx.currentTime);
-      gain.gain.setValueAtTime(0.04, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.06);
-    }
-  } catch (e) {}
-}
+// Un mismo bip para el POS, las lecturas y las demás acciones.
+function beep(type = 'click') { window.comerciandoUIBeep?.play(type === 'error' ? 'error' : 'success'); }
 
 const tile = (p, mini = false) => {
   const img = getPrimaryProductImage(p);
@@ -3037,7 +3014,7 @@ const V = {
       <div class="card" style="padding:20px;">
         <h2 style="margin-bottom:14px;">Preferencias generales</h2>
         <div style="display:flex;flex-direction:column;gap:10px;">
-          <div class="switch-row"><div><b>Sonidos de caja</b><small>Feedback auditivo al cobrar</small></div><div class="switch-toggle ${DB.settings.sound ? 'on' : ''}" onclick="this.classList.toggle('on');DB.settings.sound=this.classList.contains('on');persist();"><div class="switch-knob"></div></div></div>
+          <div class="switch-row"><div><b>Sonidos de plataforma</b><small>Bip en controles, navegación y lector de productos</small></div><div class="switch-toggle ${DB.settings.sound ? 'on' : ''}" onclick="this.classList.toggle('on');DB.settings.sound=this.classList.contains('on');persist();"><div class="switch-knob"></div></div></div>
 
 
         </div>
@@ -5800,22 +5777,7 @@ updateSessionBadge();go('home');
   overlay.addEventListener('click',close);document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
   document.getElementById('nav')?.addEventListener('click',e=>{if(e.target.closest('[data-v]')&&mobile())setTimeout(close,0)});
   side.addEventListener('mouseleave',()=>{if(!mobile()){side.classList.remove('remake-peek');if(side.contains(document.activeElement)&&document.activeElement.matches('button'))document.activeElement.blur()}});
-  /* A brief synthesized sound only on deliberate clicks, respecting the existing setting. */
-  let ctx=null,last=0;
-  function beep(mode){
-   try{
-     if(typeof DB!=='undefined'&&DB.settings&&DB.settings.sound===false)return;
-     if(window.matchMedia('(prefers-reduced-motion:reduce)').matches)return;
-     if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();
-     if(ctx.state==='suspended')ctx.resume().catch(()=>{});
-     const now=ctx.currentTime,osc=ctx.createOscillator(),gain=ctx.createGain();osc.type='sine';osc.frequency.setValueAtTime(mode==='nav'?560:680,now);osc.frequency.exponentialRampToValueAtTime(mode==='nav'?740:870,now+.075);gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.017,now+.012);gain.gain.exponentialRampToValueAtTime(.0001,now+.12);osc.connect(gain).connect(ctx.destination);osc.start(now);osc.stop(now+.13);
-   }catch{}
-  }
-  document.addEventListener('click',e=>{
-    const button=e.target.closest('button');if(!button||button.disabled)return;
-    if(!(button.closest('#nav')||button.classList.contains('sp-tab')||button.classList.contains('v8-chip')||button.classList.contains('btn')||button.classList.contains('v10-purchase-subtabs')))return;
-    const n=performance.now();if(n-last<150)return;last=n;beep(button.closest('#nav')?'nav':'action');
-  },{passive:true});
+  /* El sonido de botones y navegación se administra una sola vez desde sounds.js. */
   /* Dark mode starts enabled for the visual remake; user selection remains persisted. */
   let known=null;try{known=localStorage.getItem('comerciando.theme.v008')}catch{};
   if(!known){document.documentElement.dataset.theme='dark'}
@@ -5879,7 +5841,7 @@ body[data-view=pos] .pos .v20-scanbar .v20-hint{display:none}
   for(const c of cat){if(equivalent(c.barcode,q)||equivalent(c.code,q)){const product=P.find(p=>p[0]===c.productName||p[0]===c.name);return {kind:'pack',product,package:c,barcode:q};}}
   return null;
  }
- function emitSound(good){try{if(DB.settings?.sound===false)return;const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;const c=new Audio(),o=c.createOscillator(),g=c.createGain(),t=c.currentTime;o.type='sine';o.frequency.setValueAtTime(good?740:250,t);o.frequency.exponentialRampToValueAtTime(good?1040:180,t+.10);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.025,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+.17);o.connect(g).connect(c.destination);o.start(t);o.stop(t+.18);o.onended=()=>c.close();}catch{}}
+ function emitSound(good){ window.comerciandoUIBeep?.play(good?'success':'error'); }
  function notify(s){lastScan=s;const spot=$('.v20-scanbar .v20-recent');if(spot)spot.textContent=s;}
  function openDialog(title,inner,buttons){const wrap=$('#v20Overlay');$('#v20Title').textContent=title;$('#v20Content').innerHTML=inner;$('#v20Actions').innerHTML=buttons||'<button type="button" onclick="v20Close()">Cerrar</button>';wrap.hidden=false;wrap.setAttribute('aria-hidden','false');}
  function closeDialog(){const wrap=$('#v20Overlay');if(wrap){wrap.hidden=true;wrap.setAttribute('aria-hidden','true')}stopCamera();scanTarget='';}
