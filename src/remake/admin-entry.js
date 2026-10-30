@@ -4,6 +4,8 @@ import { renderAuth } from "../views/auth.js";
 import { createRemakeBackend } from "./backend.js";
 import engine from "./generated/admin.js";
 import template from "./generated/admin-template.js";
+import { installPlatformSound } from "./sounds.js";
+installPlatformSound();
 let mounted = false,
   loading = false,
   recovery =
