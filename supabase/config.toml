@@ -1,4 +1,4 @@
-project_id = "comerciando-premium"
+project_id = "comerciando-emprendedores"
 [functions.admin-invite-user]
 verify_jwt = false
 [functions.create-web-order]
