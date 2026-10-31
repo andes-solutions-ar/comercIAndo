@@ -3,6 +3,11 @@
 Rama independiente `emprendedores`, creada desde `origin/main` en `fcfbb76`.
 Carpeta local: `C:/Users/PAPA/Desktop/ALMACEN APP/comerciando-emprendedores`.
 
+El repositorio conserva únicamente `main` (ComercIAndo Negocios) y
+`emprendedores` (ComercIAndo Emprendedores). Esta rama incorpora la consolidación
+del historial de las ramas auxiliares de Negocios y conserva su entorno propio.
+Ver [modelo de ramas y publicaciones](docs/RAMAS.md).
+
 ## Base propia
 
 El proyecto es **COMERCIANDO EMPRENDEDORES**, en ANDES SOLUTIONS, plan Free,
@@ -13,7 +18,8 @@ Se instalaron las nueve migraciones de esta rama, con 18 tablas públicas y RLS
 habilitado en todas ellas. Se publicaron `remake-store` y `admin-invite-user`.
 Auth y `SITE_URL` apuntan a la URL de Emprendedores. El registro público está
 deshabilitado; el primer administrador fue invitado y habilitado explícitamente
-en esta base nueva. La contraseña y el primer ingreso los completa el propietario.
+en esta base nueva. El propietario completó el primer ingreso y se verificó el
+panel autenticado con el rol de Superadministrador.
 
 Copiar `.env.example` a `.env.local` y completar las tres variables del proyecto
 nuevo. `.env.local` no se versiona. Nunca copiar el `.env.local` del checkout principal.
