@@ -1,14 +1,10 @@
-const primaryProjects = new Set([
-  "stwwnqkeiluxllfcjcje",
-  "ilvdzyhpnhgkkcyptxtf",
-]);
+const emprendedoresProject = "olnpcaflwmiokeuctbke";
 
 export function assertIndependentSupabase(env) {
   const project = env.VITE_SUPABASE_PROJECT_REF?.trim();
   if (
     !project ||
-    !/^[a-z]{20}$/.test(project) ||
-    primaryProjects.has(project) ||
+    project !== emprendedoresProject ||
     env.VITE_SUPABASE_URL?.trim() !== `https://${project}.supabase.co` ||
     !env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim()
   ) {

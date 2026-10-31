@@ -15,7 +15,7 @@ test("Emprendedores rejects missing config, primary projects and mismatched URLs
   }
   assert.throws(() =>
     assertIndependentSupabase({
-      VITE_SUPABASE_PROJECT_REF: "abcdefghijklmnopqrst",
+      VITE_SUPABASE_PROJECT_REF: "olnpcaflwmiokeuctbke",
       VITE_SUPABASE_URL: "https://stwwnqkeiluxllfcjcje.supabase.co",
       VITE_SUPABASE_PUBLISHABLE_KEY: "test-only",
     }),
@@ -25,8 +25,8 @@ test("Emprendedores rejects missing config, primary projects and mismatched URLs
 test("Emprendedores accepts a separate project with matching environment configuration", () => {
   assert.doesNotThrow(() =>
     assertIndependentSupabase({
-      VITE_SUPABASE_PROJECT_REF: "abcdefghijklmnopqrst",
-      VITE_SUPABASE_URL: "https://abcdefghijklmnopqrst.supabase.co",
+      VITE_SUPABASE_PROJECT_REF: "olnpcaflwmiokeuctbke",
+      VITE_SUPABASE_URL: "https://olnpcaflwmiokeuctbke.supabase.co",
       VITE_SUPABASE_PUBLISHABLE_KEY: "test-only",
     }),
   );
