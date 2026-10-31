@@ -3,9 +3,10 @@
 Rama independiente `emprendedores`, creada desde `origin/main` en `fcfbb76`.
 Carpeta local: `C:/Users/PAPA/Desktop/ALMACEN APP/comerciando-emprendedores`.
 
-El repositorio conserva únicamente `main` (ComercIAndo Negocios) y
-`emprendedores` (ComercIAndo Emprendedores). Esta rama incorpora la consolidación
-del historial de las ramas auxiliares de Negocios y conserva su entorno propio.
+El desarrollo de ComercIAndo Emprendedores se realiza en `edition-emprendedores`
+y las implementaciones finales se integran en `emprendedores`. Negocios utiliza
+`edition-negocios` para trabajar y `main` para publicar. Se conserva el historial
+consolidado de las antiguas ramas auxiliares y el entorno propio de cada producto.
 Ver [modelo de ramas y publicaciones](docs/RAMAS.md).
 
 ## Base propia

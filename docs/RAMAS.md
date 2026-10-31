@@ -1,11 +1,17 @@
 # Versiones de ComercIAndo
 
-El repositorio mantiene dos ramas:
+El repositorio mantiene dos productos, cada uno con su rama de trabajo y su rama
+final de publicación:
 
-| Rama | Producto | Publicación | Supabase |
-| --- | --- | --- | --- |
-| `main` | ComercIAndo Negocios | https://comerciando.vercel.app | `stwwnqkeiluxllfcjcje` |
-| `emprendedores` | ComercIAndo Emprendedores | https://comerciando-git-emprendedores-ia-analytics-s-projects.vercel.app | `olnpcaflwmiokeuctbke` |
+| Producto | Rama de trabajo | Rama final | Publicación final | Supabase |
+| --- | --- | --- | --- | --- |
+| ComercIAndo Negocios | `edition-negocios` | `main` | https://comerciando.vercel.app | `stwwnqkeiluxllfcjcje` |
+| ComercIAndo Emprendedores | `edition-emprendedores` | `emprendedores` | https://comerciando-git-emprendedores-ia-analytics-s-projects.vercel.app | `olnpcaflwmiokeuctbke` |
+
+Los cambios se desarrollan en `edition-negocios` o `edition-emprendedores` y se
+integran mediante GitHub en su rama final correspondiente. Los redeploys finales
+usan `main` para Negocios y `emprendedores` para Emprendedores. Las previews de
+las ramas de trabajo no sustituyen esas publicaciones finales.
 
 La segunda URL es una preview de Vercel y conserva su protección de acceso.
 Cada producto tiene su propia base, sus usuarios y sus datos. Las claves se
