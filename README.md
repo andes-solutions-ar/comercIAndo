@@ -1,5 +1,10 @@
 # ComercIAndo Remake — backend propio
 
+Esta rama es **Emprendedores**: consultar [EMPRENDEDORES.md](EMPRENDEDORES.md)
+para su Supabase, entorno local y preview independientes. La configuración de
+abajo describe la aplicación original; en esta rama las variables de Vercel se
+limitan a Preview con override para `emprendedores`.
+
 La aplicación operativa está en /administracion/ y la tienda conectada en /tienda/.
 /panel/ deriva a la administración actual; /catalogo deriva a la tienda.
 /demo/ conserva el prototipo restringido y sus datos ficticios, separado del backend.
