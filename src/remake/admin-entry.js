@@ -2,6 +2,7 @@ import { supabase, passwordSetupLink } from "../lib/supabase.js";
 import { loadIdentity, watchSession } from "../auth/session.js";
 import { renderAuth } from "../views/auth.js";
 import { createRemakeBackend } from "./backend.js";
+import { liteState, liteDocument } from "./lite-model.js";
 import engine from "./generated/admin.js";
 import template from "./generated/admin-template.js";
 import { installPlatformSound } from "./sounds.js";
@@ -30,10 +31,69 @@ async function start(event, session) {
   try {
     const profile = await loadIdentity(session);
     window.__remakeBackend = await createRemakeBackend(profile);
+    const backend = window.__remakeBackend;
+    let documentState = structuredClone(backend.initialState);
+    window.__lite = {
+      document: () => documentState,
+      state: () => liteState(documentState, backend.users()),
+      replace: (value) => {
+        documentState = structuredClone(value);
+      },
+      async save(state) {
+        const next = liteDocument(state, documentState, profile);
+        await backend.persist(next);
+        documentState = next;
+        return liteState(documentState, backend.users());
+      },
+      async payOrder(id) {
+        const next = structuredClone(documentState);
+        const flow = next.orderFlow.find((d) => d.id === id);
+        if (!flow?.backendOrderId || flow.paymentConfirmed)
+          throw Error("El pedido ya cambió. Actualizá los datos.");
+        const at = new Date().toISOString();
+        next.payments.unshift([
+          crypto.randomUUID(),
+          id.replace(/\D/g, ""),
+          flow.payment,
+          flow.total,
+          "Aprobado",
+          { at, actor: profile.id },
+        ]);
+        const items = flow.items.map((i) => ({
+          name: i[0],
+          qty: i[1],
+          price: i[2],
+        }));
+        const sale = next.sales.find((s) => s[0] === id);
+        if (sale) {
+          sale[5] = "Cobrada";
+          sale[7] = items;
+        } else
+          next.sales.unshift([
+            id,
+            flow.customer,
+            "Web",
+            flow.total,
+            flow.payment,
+            "Cobrada",
+            flow.time,
+            items,
+            {},
+            { at, discountAmount: 0 },
+          ]);
+        flow.paymentConfirmed = true;
+        await backend.persist(next);
+        documentState = next;
+        return liteState(documentState, backend.users());
+      },
+    };
     const doc = new DOMParser().parseFromString(template.html, "text/html");
+    document.title = doc.title;
     for (const el of doc.head.querySelectorAll('style,link[rel="stylesheet"]'))
       document.head.append(el.cloneNode(true));
     document.body.innerHTML = doc.body.innerHTML;
+    document.body.className = doc.body.className;
+    document.body.dataset.view = "home";
     window.addEventListener("unhandledrejection", (ev) => {
       console.error(ev.reason);
       window.toast?.(

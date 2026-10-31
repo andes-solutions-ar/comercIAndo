@@ -9,6 +9,24 @@ y las implementaciones finales se integran en `emprendedores`. Negocios utiliza
 consolidado de las antiguas ramas auxiliares y el entorno propio de cada producto.
 Ver [modelo de ramas y publicaciones](docs/RAMAS.md).
 
+## Frontend aceptado v0.5.1
+
+La raíz y `/administracion/` abren la aplicación Emprendedores. La referencia
+entregada se conserva íntegra en `src/remake/emprendedores-original.html`.
+`scripts/build-emprendedores.mjs` conserva sus estilos y pantallas, elimina los
+datos de ejemplo y conecta sus operaciones mediante `lite-ui.js` y `lite-model.js`.
+
+Productos, categorías, stock, ventas con descuentos, cobros manuales, caja,
+entregas y preferencias se guardan con las RPC existentes del documento versionado.
+Los usuarios provienen de Auth y perfiles reales. No hay nuevas migraciones ni
+importación del almacenamiento del navegador. Los gráficos usan ventas reales.
+El catálogo Lite permite guardar visibilidad y consultar una vista previa; ese
+control no habilita pedidos web ni una pasarela de pago. La tienda anterior se
+conserva en `/tienda/`, con su configuración y reservas existentes.
+
+`tests/lite-model.test.js` verifica la adaptación con PostgreSQL local (PGlite),
+incluidos cobro, descuento, stock, persistencia e historial inmutable.
+
 ## Base propia
 
 El proyecto es **COMERCIANDO EMPRENDEDORES**, en ANDES SOLUTIONS, plan Free,
@@ -28,10 +46,11 @@ nuevo. `.env.local` no se versiona. Nunca copiar el `.env.local` del checkout pr
 ## Vercel
 
 En el proyecto Vercel existente, las tres variables están configuradas como
-overrides de **Preview, rama `emprendedores`**. El dominio productivo sigue
+overrides de **Preview, ramas `emprendedores` y `edition-emprendedores`**. El dominio productivo sigue
 apuntando a `main`.
 
-Preview: https://comerciando-git-emprendedores-ia-analytics-s-projects.vercel.app
+URL corta: https://comerciando-emprendedores.vercel.app, asociada a
+`edition-emprendedores`. La URL antigua de `emprendedores` redirige a este enlace.
 
 La preview conserva la protección de acceso de Vercel; puede requerir iniciar
 sesión allí antes de entrar al login propio de la aplicación. No se modificó la
